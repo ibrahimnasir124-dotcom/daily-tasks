@@ -1026,6 +1026,7 @@ const Sync = (() => {
       if (r.error){ err = r.error_description || r.error; state = "error"; return render(); }
       token = r.access_token; exp = Date.now() + (r.expires_in - 60) * 1000;
       hasCal = google.accounts.oauth2.hasGrantedAllScopes(r, CAL_SCOPE); calErr = "";
+      if (meta.cal && !hasCal) calErr = "Google didn't give calendar access. Tap Allow again and, on Google's screen, tick the box about calendars before tapping Continue.";
       try { localStorage.setItem(TOKEN_KEY, JSON.stringify({token, exp, cal:hasCal})); } catch(e){}
       meta.enabled = true; saveMeta(); state = "ok"; err = ""; run();
     }, error_callback: e => { err = e.message || e.type || "Sign-in was cancelled"; state = meta.enabled ? "reconnect" : "off"; render(); }});
@@ -1070,7 +1071,13 @@ const Sync = (() => {
       if (!remote || canon(remote) !== JSON.stringify(merged)) await upload(merged);
       meta.last = Date.now(); saveMeta(); state = "ok"; err = "";
       try { await calSync(); calErr = ""; }
-      catch(e){ if (state === "reconnect") throw e; calErr = e.status === 403 ? "Google Calendar access isn't allowed yet." : e.message; if (e.status === 403) hasCal = false; }
+      catch(e){
+        if (state === "reconnect") throw e;
+        const msg = String(e.message || "");
+        if (e.status === 403 && /insufficient|scope/i.test(msg)) { hasCal = false; calErr = "Google didn't give calendar access. Tap Allow again and tick the calendar box."; }
+        else if (e.status === 403 && /has not been used|disabled|SERVICE_DISABLED/i.test(msg)) calErr = "The Google Calendar API isn't switched on in your Google Cloud project yet (or was switched on a few minutes ago; it will start working shortly).";
+        else calErr = msg;
+      }
     } catch(e){
       if (state !== "reconnect"){ state = "ok"; err = e.message; }
     }
@@ -1095,7 +1102,8 @@ const Sync = (() => {
     else if (state === "error") line = `<span class="dot warn"></span>Sync problem: ${esc(err)}`;
     else if (state === "ok") line = err ? `<span class="dot warn"></span>Sync problem: ${esc(err)}` : `<span class="dot on"></span>Synced ${meta.last ? ago(meta.last) : ""}`;
     const calNeeds = meta.enabled && meta.cal && (state === "ok" || state === "syncing") && !hasCal;
-    if (calNeeds) notice = `<span>Allow Google Calendar so your phone alerts you even when this app is closed.</span><button class="btn primary" data-s="calallow">Allow</button>`;
+    if (calNeeds) notice = `<span>${calErr ? esc(calErr) : "Allow Google Calendar so your phone alerts you even when this app is closed."}</span><button class="btn primary" data-s="calallow">Allow</button>`;
+    else if (meta.enabled && meta.cal && hasCal && calErr) notice = `<span>Calendar alerts: ${esc(calErr)}</span><button class="btn" data-s="retry">Try again</button>`;
     $("calSyncOn").checked = !!meta.cal;
     $("calStatus").textContent = !meta.cal ? "" : !meta.enabled ? "Starts when you sign in." : calErr ? "Calendar problem: " + calErr
       : calNeeds ? "Needs your OK: tap Allow above." : db.calId ? "On. Alerts come from the Daily Tasks calendar on your phone." : "Setting up...";
@@ -1110,7 +1118,8 @@ const Sync = (() => {
     $("syncOff").classList.toggle("hidden", !meta.enabled);
     if (document.activeElement !== $("syncClientId")) $("syncClientId").value = db.settings.googleClientId || DEFAULT_CLIENT_ID;
   }
-  document.addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (b) connect(b.dataset.s === "calallow" ? "consent" : ""); });
+  document.addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (!b) return;
+    if (b.dataset.s === "retry") { calErr = ""; run(); } else connect(b.dataset.s === "calallow" ? "consent" : ""); });
   $("calSyncOn").onchange = e => {
     meta.cal = e.target.checked; saveMeta();
     if (meta.cal && meta.enabled && !hasCal) connect("consent"); else { renderStatus(); run(); }
