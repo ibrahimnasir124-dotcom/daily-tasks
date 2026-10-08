@@ -164,7 +164,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
     <button data-view="settings"><span class="ico">⚙</span><span class="lbl">Settings &amp; backup</span></button>
   </nav>
   <button class="btn primary cal-btn" id="calExport" title="Put your timed tasks and reminders into Google Calendar">📲 Send to phone calendar</button>
-  <div class="side-foot" id="backupFoot"></div>
+  <div class="side-foot" style="display:block"><div id="syncFoot" style="margin-bottom:6px"></div><div id="backupFoot"></div></div>
 </aside>
 
 <div class="wrap">
@@ -174,6 +174,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
     <span>Turn on desktop notifications so reminders pop up even when this window is in the background.</span>
     <button class="btn primary" id="enableNotif">Turn on</button>
   </div>
+  <div class="notice hidden" id="syncNotice"></div>
   <div class="notice hidden" id="backupNotice"></div>
 
   <!-- TODAY -->
@@ -220,6 +221,22 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
 
   <!-- SETTINGS -->
   <section id="view-settings" class="hidden">
+    <div class="card">
+      <div class="card-h"><h2>Sync between your devices</h2></div>
+      <div id="syncHosted">
+        <div class="setrow" id="syncStatus"></div>
+        <div class="row">
+          <button class="btn primary" id="syncConnect">Sign in with Google to sync</button>
+          <button class="btn" id="syncNow">Sync now</button>
+          <button class="btn ghost danger" id="syncOff">Turn off sync</button>
+        </div>
+        <details style="margin-top:10px" id="syncIdWrap"><summary class="hint" style="cursor:pointer">Google client ID</summary>
+          <div class="row" style="margin-top:6px"><input id="syncClientId" placeholder="xxxxxxxx.apps.googleusercontent.com" style="flex:1;min-width:220px"><button class="btn" id="syncSaveId">Save</button></div>
+        </details>
+        <div class="hint">Your tasks and daily log are kept in a private, hidden file in your own Google Drive that only this app can see. Sign in on each device (phone and PC) with the same Google account. Changes sync within seconds while the app is open.</div>
+      </div>
+      <div id="syncLocal" class="hint">Sync works in the web version of this app: <a href="https://ibrahimnasir124-dotcom.github.io/daily-tasks/" target="_blank" rel="noopener">ibrahimnasir124-dotcom.github.io/daily-tasks</a>. Move your tasks there with <b>Save a backup file</b> and <b>Restore from a file</b>.</div>
+    </div>
     <div class="card">
       <div class="card-h"><h2>Automatic backup</h2></div>
       <div id="backupStatus" class="setrow"></div>
@@ -335,10 +352,34 @@ function load(obj){
 }
 let db;
 try { db = load(JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){ db = load(); }
-function save(){
-  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast("Could not save: your browser blocked storage for this page."); }
-  Backup.schedule();
+// ---- change tracking for sync: every task and daily log carries the time it last changed, deletions leave a dated marker ----
+let known = null;
+const taskSig = t => { const {updatedAt, ...rest} = t; return JSON.stringify(rest); };
+function markKnown(){
+  db.deleted = db.deleted || {}; db.logStamps = db.logStamps || {};
+  known = {tasks:{}, logs:Object.assign({}, db.logs)};
+  for (const t of db.tasks){ if (!t.updatedAt) t.updatedAt = t.createdAt || 1; known.tasks[t.id] = taskSig(t); }
 }
+function stamp(){
+  if (!known) return markKnown();
+  const now = Date.now(), seen = {};
+  for (const t of db.tasks){
+    const sig = taskSig(t); seen[t.id] = 1;
+    if (known.tasks[t.id] !== sig){ t.updatedAt = now; delete db.deleted[t.id]; }
+  }
+  for (const id in known.tasks) if (!seen[id]) db.deleted[id] = now;
+  for (const d of new Set([...Object.keys(known.logs), ...Object.keys(db.logs)]))
+    if ((known.logs[d]||"") !== (db.logs[d]||"")) db.logStamps[d] = now;
+  markKnown();
+}
+function persist(){
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast("Could not save: your browser blocked storage for this page."); }
+}
+function save(){
+  stamp(); persist();
+  Backup.schedule(); Sync.schedule();
+}
+markKnown();
 
 // ---------- dates ----------
 const pad = n => String(n).padStart(2,"0");
@@ -467,7 +508,7 @@ function render(){
   $("phoneHint").classList.toggle("hidden", !IS_ANDROID);
   const d = today(), all = tasksFor(d), open = all.filter(t => !isDone(t,d));
   $("badgeToday").textContent = open.length || "";
-  Backup.renderStatus();
+  Backup.renderStatus(); Sync.renderStatus();
 
   if (view === "today"){
     const done = all.filter(t => isDone(t,d));
@@ -885,6 +926,142 @@ const Backup = (() => {
   return {init, schedule, renderStatus, _test: h => { dir = h; state = "on"; return run(); }};
 })();
 
+// ---------- sync through Google Drive (web version only) ----------
+const Sync = (() => {
+  const DEFAULT_CLIENT_ID = "";
+  const SCOPE = "https://www.googleapis.com/auth/drive.appdata", FILE = "dailytasks-sync.json";
+  const TOKEN_KEY = KEY + ".gtoken", META_KEY = KEY + ".sync";
+  let token = null, exp = 0, fileId = null, busy = false, again = false, timer = null, tokenClient = null, gis = null;
+  let meta = {}; try { meta = JSON.parse(localStorage.getItem(META_KEY) || "{}"); } catch(e){}
+  try { const t = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); if (t && t.exp > Date.now() + 60000){ token = t.token; exp = t.exp; } } catch(e){}
+  let state = !HOSTED ? "local" : !meta.enabled ? "off" : token ? "ok" : "reconnect", err = "";
+  const clientId = () => (db.settings.googleClientId || DEFAULT_CLIENT_ID).trim();
+  const saveMeta = () => { try { localStorage.setItem(META_KEY, JSON.stringify(meta)); } catch(e){} };
+
+  // merge two copies: newest version of each task wins, a deletion wins if it happened after the task's last change
+  function merge(L, R){
+    const del = Object.assign({}, R.deleted || {});
+    for (const k in (L.deleted || {})) del[k] = Math.max(del[k] || 0, L.deleted[k]);
+    const pick = {};
+    for (const t of [...(R.tasks || []), ...(L.tasks || [])]){ const c = pick[t.id]; if (!c || (t.updatedAt || 0) >= (c.updatedAt || 0)) pick[t.id] = t; }
+    const tasks = Object.values(pick).filter(t => !(del[t.id] > (t.updatedAt || 0)));
+    const cutoff = Date.now() - 90*864e5;
+    for (const k in del) if (del[k] < cutoff || pick[k] && !(del[k] > (pick[k].updatedAt || 0))) delete del[k];
+    const logs = {}, logStamps = {}, Ls = L.logStamps || {}, Rs = R.logStamps || {};
+    for (const d of new Set([...Object.keys(L.logs || {}), ...Object.keys(R.logs || {}), ...Object.keys(Ls), ...Object.keys(Rs)])){
+      const useL = (Ls[d] || 0) >= (Rs[d] || 0);
+      const v = useL ? (L.logs || {})[d] : (R.logs || {})[d];
+      if (v) logs[d] = v;
+      logStamps[d] = Math.max(Ls[d] || 0, Rs[d] || 0);
+    }
+    tasks.sort((a,b) => a.id < b.id ? -1 : 1);
+    return {tasks, logs, deleted:del, logStamps};
+  }
+  const shared = d => ({tasks:d.tasks, logs:d.logs, deleted:d.deleted || {}, logStamps:d.logStamps || {}});
+  const canon = d => JSON.stringify(merge(d, {tasks:[]}));
+
+  function loadGis(){
+    if (gis) return gis;
+    gis = new Promise((res, rej) => {
+      const sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+      sc.onload = res; sc.onerror = () => { gis = null; rej(new Error("Couldn't reach Google. Check your connection.")); };
+      document.head.appendChild(sc);
+    });
+    return gis;
+  }
+  async function connect(prompt){
+    if (!clientId()){ $("syncIdWrap").open = true; $("syncClientId").focus(); toast("Paste your Google client ID first."); return; }
+    try { await loadGis(); } catch(e){ err = e.message; state = "error"; return render(); }
+    tokenClient = google.accounts.oauth2.initTokenClient({client_id:clientId(), scope:SCOPE, callback: r => {
+      if (r.error){ err = r.error_description || r.error; state = "error"; return render(); }
+      token = r.access_token; exp = Date.now() + (r.expires_in - 60) * 1000;
+      try { localStorage.setItem(TOKEN_KEY, JSON.stringify({token, exp})); } catch(e){}
+      meta.enabled = true; saveMeta(); state = "ok"; err = ""; run();
+    }, error_callback: e => { err = e.message || e.type || "Sign-in was cancelled"; state = meta.enabled ? "reconnect" : "off"; render(); }});
+    tokenClient.requestAccessToken({prompt});
+  }
+  async function api(url, opts={}){
+    if (!token || Date.now() > exp){ token = null; state = "reconnect"; throw new Error("expired"); }
+    const r = await fetch(url, Object.assign({}, opts, {headers:Object.assign({Authorization:"Bearer "+token}, opts.headers || {})}));
+    if (r.status === 401){ token = null; localStorage.removeItem(TOKEN_KEY); state = "reconnect"; throw new Error("expired"); }
+    if (!r.ok) throw new Error("Google Drive said: " + r.status + " " + (await r.text()).slice(0,120));
+    return r;
+  }
+  async function findFile(){
+    if (fileId) return fileId;
+    const q = encodeURIComponent(`name='${FILE}'`);
+    const r = await (await api(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,modifiedTime)&orderBy=modifiedTime desc`)).json();
+    fileId = r.files && r.files[0] ? r.files[0].id : null;
+    return fileId;
+  }
+  async function upload(data){
+    const body = JSON.stringify(data);
+    if (fileId){ await api(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {method:"PATCH", headers:{"Content-Type":"application/json"}, body}); return; }
+    const b = "dtsync" + Date.now();
+    const multi = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:FILE, parents:["appDataFolder"]})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${b}--`;
+    const r = await (await api("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {method:"POST", headers:{"Content-Type":"multipart/related; boundary="+b}, body:multi})).json();
+    fileId = r.id;
+  }
+  async function run(){
+    if (state !== "ok" && state !== "syncing") return;
+    if (busy){ again = true; return; }
+    busy = true; state = "syncing"; renderStatus();
+    try {
+      stamp();
+      const id = await findFile();
+      const remote = id ? await (await api(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`)).json() : null;
+      const mine = shared(db), merged = remote ? merge(mine, remote) : merge(mine, {tasks:[]});
+      if (canon(mine) !== JSON.stringify(merged)){
+        if (selId && !merged.tasks.some(t => t.id === selId)) selId = null;
+        Object.assign(db, merged); markKnown(); persist(); Backup.schedule();
+        render();   // safe while typing: render() leaves focused fields alone
+      }
+      if (!remote || canon(remote) !== JSON.stringify(merged)) await upload(merged);
+      meta.last = Date.now(); saveMeta(); state = "ok"; err = "";
+    } catch(e){
+      if (state !== "reconnect"){ state = "ok"; err = e.message; }
+    }
+    busy = false; renderStatus();
+    if (again){ again = false; schedule(); }
+  }
+  function schedule(){ if (state !== "ok" && state !== "syncing") return; clearTimeout(timer); timer = setTimeout(run, 1500); }
+  function off(){
+    meta.enabled = false; saveMeta(); state = "off"; fileId = null;
+    if (token && window.google && google.accounts) google.accounts.oauth2.revoke(token, () => {});
+    token = null; localStorage.removeItem(TOKEN_KEY); render();
+  }
+  const ago = ts => { const s = (Date.now()-ts)/1000; return s < 60 ? "just now" : s < 3600 ? Math.round(s/60)+" min ago" : new Date(ts).toLocaleString(undefined,{weekday:"short",hour:"numeric",minute:"2-digit"}); };
+  function renderStatus(){
+    if (!$("syncFoot")) return;
+    let line = "", notice = "";
+    if (state === "off") line = `<span class="dot warn"></span>Sync is off`;
+    else if (state === "reconnect"){ line = `<span class="dot warn"></span>Sync paused`;
+      notice = `<span>Tap to sync your tasks with your other devices.</span><button class="btn primary" data-s="reconnect">Sync now</button>`; }
+    else if (state === "syncing") line = `<span class="dot on"></span>Syncing...`;
+    else if (state === "error") line = `<span class="dot warn"></span>Sync problem: ${esc(err)}`;
+    else if (state === "ok") line = err ? `<span class="dot warn"></span>Sync problem: ${esc(err)}` : `<span class="dot on"></span>Synced ${meta.last ? ago(meta.last) : ""}`;
+    $("syncFoot").innerHTML = state === "local" ? "" : line;
+    $("syncStatus").innerHTML = line;
+    $("syncNotice").innerHTML = notice; $("syncNotice").classList.toggle("hidden", !notice);
+    $("syncHosted").classList.toggle("hidden", state === "local");
+    $("syncLocal").classList.toggle("hidden", state !== "local");
+    $("syncConnect").classList.toggle("hidden", state === "ok" || state === "syncing");
+    $("syncConnect").textContent = meta.enabled ? "Reconnect to Google" : "Sign in with Google to sync";
+    $("syncNow").classList.toggle("hidden", !meta.enabled);
+    $("syncOff").classList.toggle("hidden", !meta.enabled);
+    if (document.activeElement !== $("syncClientId")) $("syncClientId").value = db.settings.googleClientId || DEFAULT_CLIENT_ID;
+  }
+  document.addEventListener("click", e => { const b = e.target.closest("[data-s=reconnect]"); if (b) connect(""); });
+  $("syncConnect").onclick = () => connect(meta.enabled ? "" : "consent");
+  $("syncNow").onclick = () => { if (state === "ok") run(); else connect(""); };
+  $("syncOff").onclick = () => { if (confirm("Stop syncing this device? Your tasks stay here and in Google Drive.")) off(); };
+  $("syncSaveId").onclick = () => { db.settings.googleClientId = $("syncClientId").value.trim(); save(); toast("Client ID saved"); };
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") run(); });
+  setInterval(() => { if (document.visibilityState === "visible") run(); }, 60000);
+  return {schedule, run, renderStatus, merge, init: () => { renderStatus(); if (state === "ok") run(); },
+    _test: (tok, cid) => { token = tok; exp = Date.now() + 3600e3; meta.enabled = true; state = "ok"; return run(); }};
+})();
+
 // ---------- reminders ----------
 let audioCtx;
 function beep(){
@@ -950,10 +1127,10 @@ function tick(){
   for (const k in db.notified){ const p = k.split("|"); if (p[1] && p[1] < addDays(d,-3)) delete db.notified[k]; }
 }
 setInterval(() => { tick(); if (view === "today" && !document.querySelector(".dragging") && !$("drawer").contains(document.activeElement)) render(); }, 30000);
-window.addEventListener("storage", e => { if (e.key === KEY && e.newValue){ try { db = load(JSON.parse(e.newValue)); render(); } catch(_){} } });
+window.addEventListener("storage", e => { if (e.key === KEY && e.newValue){ try { db = load(JSON.parse(e.newValue)); markKnown(); render(); } catch(_){} } });
 
-window.__dailyTasks = {Backup};
-render(); tick(); Backup.init();
+window.__dailyTasks = {Backup, Sync};
+render(); tick(); Backup.init(); Sync.init();
 })();
 </script>
 </body>
