@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Tasks</title>
+<style>
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --text:#1f2430; --muted:#6b7385; --line:#e4e7ee; --hover:#f0f3f9;
+  --accent:#1a73e8; --accent-soft:#e8f0fe; --danger:#d93025; --ok:#188038; --warn:#b06000;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#15181e; --card:#1e222a; --text:#e8eaed; --muted:#9aa0ab; --line:#2e333d; --hover:#262b35;
+    --accent:#8ab4f8; --accent-soft:#25324a; --danger:#f28b82; --ok:#81c995; --warn:#fdd663; --shadow:none; }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Segoe UI",system-ui,sans-serif;display:flex}
+button{font:inherit;color:inherit}
+input,select,textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+textarea{resize:vertical;min-height:80px}
+.hidden{display:none!important}
+
+/* sidebar */
+aside{width:230px;flex:none;background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 10px}
+aside h1{font-size:19px;margin:4px 12px 2px}
+aside .date{color:var(--muted);font-size:13px;margin:0 12px 16px}
+aside nav button{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:10px 14px;border-radius:0 20px 20px 0;cursor:pointer;text-align:left;color:var(--text)}
+aside nav button:hover{background:var(--hover)}
+aside nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+aside nav .ico{width:20px;text-align:center}
+aside nav .badge{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400}
+aside nav button.drop-hover{outline:2px dashed var(--accent)}
+.cal-btn{margin:14px 6px 0;width:calc(100% - 12px);font-size:14px;padding:8px 10px;display:flex;align-items:center;justify-content:center;gap:8px}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);width:min(520px,92vw);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin:0 0 8px;font-size:18px}
+dialog ol{padding-left:20px;margin:8px 0} dialog li{margin:6px 0}
+.side-foot{margin-top:auto;padding:12px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.side-foot button{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-size:12px;text-decoration:underline}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--muted)}
+.dot.on{background:var(--ok)} .dot.warn{background:var(--warn)}
+
+/* main */
+.wrap{flex:1;display:flex;min-width:0;height:100vh}
+main{flex:1;overflow:auto;padding:24px}
+.col{max-width:760px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.card-h h2{font-size:18px;margin:0}
+.card-h .sub{color:var(--muted);font-size:13px}
+.card-h .spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);padding:7px 14px;border-radius:20px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){ .btn.primary{color:#15181e} }
+.btn.ghost{border-color:transparent;background:none}
+.btn.danger{color:var(--danger)}
+.hint{color:var(--muted);font-size:13px;margin-top:6px}
+.notice{background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.notice span{flex:1;min-width:200px}
+
+/* add row */
+.add{display:flex;align-items:center;gap:10px;padding:6px 4px;border-radius:10px}
+.add .plus{width:22px;height:22px;flex:none;display:grid;place-items:center;color:var(--accent);font-size:22px;line-height:1}
+.add input{border:0;background:none;padding:8px 0;outline:none!important}
+.add:focus-within{background:var(--hover)}
+.parse-preview{font-size:12px;color:var(--accent);margin:0 0 4px 36px;min-height:0}
+
+/* task rows */
+.list{min-height:8px}
+.task{display:flex;align-items:flex-start;gap:6px;padding:8px 4px;border-radius:10px;position:relative;transition:background .12s, opacity .2s, transform .2s}
+.task:hover{background:var(--hover)}
+.task.sel{background:var(--accent-soft)}
+.handle{width:16px;flex:none;color:var(--muted);cursor:grab;opacity:0;padding-top:3px;font-size:14px;user-select:none;letter-spacing:-3px}
+.task:hover .handle{opacity:.8}
+.task.dragging{opacity:.35}
+.task.completing{opacity:0;transform:translateX(20px)}
+.check{width:20px;height:20px;flex:none;border:2px solid var(--muted);border-radius:50%;background:none;cursor:pointer;margin-top:1px;padding:0;display:grid;place-items:center;font-size:12px;color:transparent}
+.check:hover{border-color:var(--accent);color:var(--accent)}
+.task.done .check{background:var(--accent);border-color:var(--accent);color:#fff}
+.task.high .check{border-color:var(--danger)}
+.task .body{flex:1;min-width:0;cursor:pointer;padding-left:6px}
+.task .title{word-wrap:break-word}
+.task.done .title{text-decoration:line-through;color:var(--muted)}
+.meta{font-size:12px;color:var(--muted);display:flex;gap:6px 10px;flex-wrap:wrap;margin-top:2px;align-items:center}
+.notes{font-size:13px;color:var(--muted);margin-top:2px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chip{padding:1px 8px;border-radius:10px;border:1px solid var(--line)}
+.chip.rep{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.chip.over{color:var(--danger);border-color:var(--danger)}
+.chip.carry{color:var(--warn);border-color:var(--warn)}
+.chip.prio{color:var(--danger);border-color:transparent;font-weight:600}
+.task .x{background:none;border:0;color:var(--muted);cursor:pointer;opacity:0;padding:2px 6px;border-radius:6px}
+.task:hover .x{opacity:1}
+.task .x:hover{background:var(--line);color:var(--text)}
+.empty{color:var(--muted);padding:14px 4px;text-align:center}
+.drop-line{height:2px;background:var(--accent);border-radius:2px;margin:0 4px}
+details.completed{margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
+details.completed summary{cursor:pointer;color:var(--muted);padding:6px 4px;list-style:none;user-select:none}
+details.completed summary::before{content:"▸ ";}
+details.completed[open] summary::before{content:"▾ ";}
+.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin:4px 0 6px}
+.progress div{height:100%;background:var(--ok);transition:width .3s}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.seg button{border:0;background:none;padding:4px 12px;cursor:pointer;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.daycard.drop-hover{outline:2px dashed var(--accent);outline-offset:2px}
+
+/* details drawer */
+.drawer{width:360px;flex:none;background:var(--card);border-left:1px solid var(--line);height:100vh;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:4px}
+.drawer label{font-size:12px;color:var(--muted);margin-top:10px}
+.drawer .title-in{font-size:18px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;padding:6px 0}
+.drawer .top{display:flex;align-items:center;gap:8px}
+.drawer .top .spacer{flex:1}
+.two{display:flex;gap:10px}.two>div{flex:1;display:flex;flex-direction:column}
+.days{display:flex;gap:4px;flex-wrap:wrap}
+.days button{border:1px solid var(--line);background:none;border-radius:16px;padding:4px 9px;cursor:pointer;font-size:13px}
+.days button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* toasts + alerts */
+#toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:30;align-items:center}
+.toast{background:#323232;color:#fff;border-radius:8px;padding:10px 14px;display:flex;gap:16px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:14px}
+.toast button{background:none;border:0;color:#8ab4f8;font-weight:600;cursor:pointer}
+#banner{position:fixed;right:20px;bottom:20px;max-width:360px;z-index:31;display:flex;flex-direction:column;gap:10px}
+.alert{background:var(--card);border:2px solid var(--accent);border-radius:14px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.alert b{display:block;margin-bottom:4px}
+.alert .body{white-space:pre-wrap;font-size:14px}
+.alert .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{text-align:left;padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;border-top:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.setrow{display:flex;align-items:center;gap:10px;margin:10px 0}
+.setrow input[type=checkbox]{width:auto}
+.setrow select,.setrow input[type=time]{width:auto}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px}
+
+@media (max-width:900px){ .drawer{position:fixed;right:0;top:0;z-index:20;box-shadow:-8px 0 30px rgba(0,0,0,.2);width:min(360px,100vw)} }
+@media (hover:none){ .desk-only{display:none} .handle{display:none} .task .x{opacity:.6} }
+@media (max-width:640px){
+  .drawer{width:100vw}
+  body{flex-direction:column} aside{width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:8px}
+  aside nav{display:flex;flex-wrap:wrap} aside nav button{border-radius:20px;padding:8px 10px;width:auto} aside nav .lbl{display:none}
+  .side-foot{display:none} .wrap{height:auto} main{padding:12px}
+}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a73e8">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<aside>
+  <h1>Daily Tasks</h1>
+  <div class="date" id="todayLabel"></div>
+  <nav id="nav">
+    <button data-view="today" class="on"><span class="ico">☀</span><span class="lbl">Today</span><span class="badge" id="badgeToday"></span></button>
+    <button data-view="upcoming" data-drop="tomorrow"><span class="ico">📅</span><span class="lbl">Upcoming</span></button>
+    <button data-view="all"><span class="ico">☰</span><span class="lbl">All tasks</span></button>
+    <button data-view="history"><span class="ico">🕘</span><span class="lbl">History</span></button>
+    <button data-view="settings"><span class="ico">⚙</span><span class="lbl">Settings &amp; backup</span></button>
+  </nav>
+  <button class="btn primary cal-btn" id="calExport" title="Put your timed tasks and reminders into Google Calendar">📲 Send to phone calendar</button>
+  <div class="side-foot" id="backupFoot"></div>
+</aside>
+
+<div class="wrap">
+<main>
+ <div class="col">
+  <div class="notice hidden" id="notifNotice">
+    <span>Turn on desktop notifications so reminders pop up even when this window is in the background.</span>
+    <button class="btn primary" id="enableNotif">Turn on</button>
+  </div>
+  <div class="notice hidden" id="backupNotice"></div>
+
+  <!-- TODAY -->
+  <section id="view-today">
+    <div class="card">
+      <div class="card-h">
+        <h2>Today</h2><span class="sub" id="todayCount"></span><span class="spacer"></span>
+        <div class="seg" id="sortSeg" title="How to order today's list"><button data-sort="mine">My order</button><button data-sort="time">By time</button></div>
+      </div>
+      <div class="progress"><div id="todayBar" style="width:0"></div></div>
+      <div class="add"><span class="plus">+</span><input id="quick" placeholder="Add a task" autocomplete="off"></div>
+      <div class="parse-preview" id="preview"></div>
+      <div class="list" id="todayList" data-list="today"></div>
+      <details class="completed" id="doneWrap"><summary id="doneSum"></summary><div id="doneList"></div></details>
+    </div>
+    <div class="hint" style="margin:-6px 4px 16px">Tip: type "Send report at 4pm", "Check emails 9:00 every day" or "Team call 14:30 weekdays !".<span class="desk-only"> Drag <span style="letter-spacing:-3px">⋮⋮</span> to reorder, or drop a task on <b>Upcoming</b> to move it to tomorrow. Press <kbd>N</kbd> to add a task.</span></div>
+
+    <div class="card">
+      <div class="card-h"><h2>Daily log</h2><span class="sub">notes, numbers, anything you track each day</span></div>
+      <textarea id="dailyLog" placeholder="What happened today, figures to record, follow-ups..." style="min-height:110px"></textarea>
+      <div class="hint" id="logSaved">Saves automatically.</div>
+    </div>
+  </section>
+
+  <!-- UPCOMING -->
+  <section id="view-upcoming" class="hidden">
+    <div class="hint" style="margin:0 4px 12px">Drag a task onto another day to reschedule it.</div>
+    <div id="upcomingList"></div>
+  </section>
+
+  <!-- ALL -->
+  <section id="view-all" class="hidden">
+    <div class="card"><div class="card-h"><h2>Repeating tasks</h2></div><div id="repeatList"></div></div>
+    <div class="card"><div class="card-h"><h2>One-time tasks</h2><span class="spacer"></span><label class="sub"><input type="checkbox" id="showDoneAll" style="width:auto"> show completed</label></div><div id="onceList"></div></div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="view-history" class="hidden">
+    <div class="card">
+      <div class="card-h"><h2>Past days</h2><span class="spacer"></span><button class="btn" id="exportCsv">Export to CSV (Excel)</button></div>
+      <table><thead><tr><th>Date</th><th>Done</th><th>Tasks completed</th><th>Log</th></tr></thead><tbody id="historyBody"></tbody></table>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" class="hidden">
+    <div class="card">
+      <div class="card-h"><h2>Automatic backup</h2></div>
+      <div id="backupStatus" class="setrow"></div>
+      <div class="row" id="backupBtns">
+        <button class="btn primary" id="pickFolder">Choose backup folder</button>
+        <button class="btn" id="backupNow">Back up now</button>
+        <button class="btn" id="restoreFolder">Restore from backup folder</button>
+        <button class="btn ghost danger" id="stopBackup">Turn off</button>
+      </div>
+      <div class="hint">
+        Every change is saved to <b>DailyTasks-backup.json</b> in the folder you choose, plus one copy per day (the last 30 days are kept).<br>
+        <b>To back up to Google Drive:</b> install <i>Google Drive for desktop</i>, then pick a folder inside <b>My Drive</b> (usually <code>G:\My Drive</code>). Drive syncs it to the cloud for you.<br>
+        Works in Microsoft Edge and Google Chrome. If the browser asks, choose <b>Allow on every visit</b> so backups keep running after a restart.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Reminders</h2></div>
+      <div class="setrow"><input type="checkbox" id="setSound"><label for="setSound">Play a sound with reminders</label></div>
+      <div class="setrow"><label for="setDefaultRemind">Default reminder for tasks with a time</label><select id="setDefaultRemind"></select></div>
+      <div class="setrow"><label for="setMorning">Morning summary at</label><input type="time" id="setMorning"><span class="hint" style="margin:0">(clear it for none)</span></div>
+      <div class="row"><button class="btn" id="testNotif">Send a test reminder</button></div>
+      <div class="hint">Reminders work while this page is open (minimized or in a background tab is fine).</div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Manual backup</h2></div>
+      <div class="hint" id="phoneHint" style="margin:0 0 10px">On your phone: tap <b>Restore from a file</b> and pick <b>DailyTasks-backup.json</b> from Google Drive to load your PC's tasks. Tap <b>Save a backup file</b> and choose Drive to send your changes back.</div>
+      <div class="row">
+        <button class="btn" id="exportJson">Save a backup file</button>
+        <label class="btn">Restore from a file<input type="file" id="importJson" accept=".json" class="hidden"></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Danger zone</h2></div>
+      <button class="btn danger" id="wipe">Delete all data</button>
+    </div>
+  </section>
+ </div>
+</main>
+
+<div class="drawer hidden" id="drawer">
+  <div class="top">
+    <button class="btn" id="dDone">Mark complete</button>
+    <span class="spacer"></span>
+    <button class="btn ghost danger" id="dDel" title="Delete">Delete</button>
+    <button class="btn ghost" id="dClose" title="Close">✕</button>
+  </div>
+  <input class="title-in" id="dTitle" placeholder="Title">
+  <label for="dNotes">Details</label>
+  <textarea id="dNotes" placeholder="Add details"></textarea>
+  <div class="two">
+    <div><label for="dDate">Date</label><input type="date" id="dDate"></div>
+    <div><label for="dTime">Time</label><input type="time" id="dTime"></div>
+  </div>
+  <label for="dRepeat">Repeat</label>
+  <select id="dRepeat">
+    <option value="none">Does not repeat</option>
+    <option value="daily">Every day</option>
+    <option value="weekdays">Every weekday (Mon to Fri)</option>
+    <option value="weekly">On chosen days</option>
+    <option value="monthly">Every month (same date)</option>
+  </select>
+  <div id="dDaysWrap" class="hidden"><label>Days</label><div class="days" id="dDays"></div></div>
+  <div class="two">
+    <div><label for="dRemind">Remind me</label><select id="dRemind"></select></div>
+    <div><label for="dPrio">Priority</label><select id="dPrio"><option value="normal">Normal</option><option value="high">High</option></select></div>
+  </div>
+  <div class="hint" id="dHint"></div>
+  <button class="btn" id="dCal" style="margin-top:12px;align-self:flex-start">📅 Add to Google Calendar</button>
+</div>
+</div>
+
+<dialog id="calDlg">
+  <h2>Send tasks to Google Calendar</h2>
+  <div id="calSummary"></div>
+  <ol>
+    <li>Find <b>DailyTasks.ics</b> in your Downloads.</li>
+    <li>Open <a href="https://calendar.google.com/calendar/u/0/r/settings/export" target="_blank" rel="noopener">Google Calendar's Import page</a> on this PC, signed in to the same Google account as your Pixel.</li>
+    <li>Choose the file, pick a calendar, and click <b>Import</b>.</li>
+  </ol>
+  <div class="hint">Your Pixel's Calendar app gets the events within a minute and alerts you at each task's reminder time.<br>
+  The calendar doesn't update itself. After adding or changing tasks, send them again: delete the old <b>Daily Tasks</b> calendar in Google Calendar settings first, create it again, and import, so nothing is doubled. Ticking a task off here doesn't remove it from the calendar.<br>
+  If the phone doesn't alert for imported events, open the Daily Tasks calendar's settings in Google Calendar and set its default notification (for example "0 minutes before").</div>
+  <div class="hint" id="calTip"></div>
+  <div class="row" style="justify-content:flex-end;margin-top:14px">
+    <a class="btn" href="https://calendar.google.com/calendar/u/0/r/settings/export" target="_blank" rel="noopener" style="text-decoration:none">Open Google Calendar</a>
+    <button class="btn primary" id="calClose">Done</button>
+  </div>
+</dialog>
+
+<div id="banner"></div>
+<div id="toasts"></div>
+
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const KEY = "dailyTasks.v1";
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+// when served from a web address (the installable phone app), a service worker makes it work offline and lets Android show notifications
+const HOSTED = /^https?:$/.test(location.protocol) && "serviceWorker" in navigator;
+let swReg = null;
+if (HOSTED) navigator.serviceWorker.register("sw.js").then(r => navigator.serviceWorker.ready).then(r => { swReg = r; render(); }).catch(() => {});
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const REMIND_OPTS = [[-1,"No reminder"],[0,"At the time"],[5,"5 min before"],[10,"10 min before"],[15,"15 min before"],[30,"30 min before"],[60,"1 hour before"]];
+
+// ---------- storage ----------
+function blank(){ return {tasks:[], logs:{}, notified:{}, snoozes:{}, settings:{sound:true, defaultRemind:0, morning:"09:00", sort:"mine", backupNoticeHidden:false}}; }
+function load(obj){
+  const d = Object.assign(blank(), obj || {});
+  d.settings = Object.assign(blank().settings, d.settings || {});
+  d.tasks.forEach((t,i) => { if (t.order == null) t.order = i; });
+  return d;
+}
+let db;
+try { db = load(JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){ db = load(); }
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast("Could not save: your browser blocked storage for this page."); }
+  Backup.schedule();
+}
+
+// ---------- dates ----------
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const today = () => ymd(new Date());
+const parseYmd = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const addDays = (s,n) => { const d = parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const nice = s => parseYmd(s).toLocaleDateString(undefined,{weekday:"long", day:"numeric", month:"long"});
+const short = s => parseYmd(s).toLocaleDateString(undefined,{weekday:"short", day:"numeric", month:"short"});
+const dayName = s => s === today() ? "Today" : s === addDays(today(),1) ? "Tomorrow" : nice(s);
+function fmtTime(t){ if(!t) return ""; const [h,m] = t.split(":").map(Number); const d = new Date(); d.setHours(h,m,0,0); return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}); }
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nowHM = () => { const n = new Date(); return pad(n.getHours())+":"+pad(n.getMinutes()); };
+const minutes = hm => { const [h,m] = hm.split(":").map(Number); return h*60+m; };
+const byId = id => db.tasks.find(t => t.id === id);
+
+// ---------- task logic ----------
+function occursOn(t, d){
+  if (t.repeat === "none") return t.date === d;
+  if (d < t.date) return false;
+  const wd = parseYmd(d).getDay();
+  switch (t.repeat){
+    case "daily": return true;
+    case "weekdays": return wd >= 1 && wd <= 5;
+    case "weekly": return (t.days||[]).includes(wd);
+    case "monthly": {
+      const want = parseYmd(t.date).getDate(), dd = parseYmd(d);
+      const last = new Date(dd.getFullYear(), dd.getMonth()+1, 0).getDate();
+      return dd.getDate() === Math.min(want, last);
+    }
+  }
+  return false;
+}
+const isDone = (t,d) => t.repeat === "none" ? !!t.done : !!(t.doneDates && t.doneDates[d]);
+function setDone(t,d,v){
+  if (t.repeat === "none"){ t.done = v; t.doneAt = v ? today() : null; }
+  else { t.doneDates = t.doneDates || {}; if (v) t.doneDates[d] = Date.now(); else delete t.doneDates[d]; }
+}
+const byTime = (a,b) => (a.time||"99:99").localeCompare(b.time||"99:99");
+const byOrder = (a,b) => (a.order - b.order) || byTime(a,b);
+// today's list: everything scheduled today + unfinished one-time tasks from earlier days (carried over)
+function tasksFor(d){
+  const list = [];
+  for (const t of db.tasks){
+    if (occursOn(t,d)) list.push(t);
+    else if (d === today() && t.repeat === "none" && !t.done && t.date < d) list.push(t);
+  }
+  return list;
+}
+function repeatLabel(t){
+  switch(t.repeat){
+    case "daily": return "Every day";
+    case "weekdays": return "Weekdays";
+    case "weekly": return "Every "+(t.days||[]).slice().sort().map(i=>DAYS[i]).join(", ");
+    case "monthly": return "Monthly on day "+parseYmd(t.date).getDate();
+  }
+  return "";
+}
+const minOrder = () => db.tasks.reduce((m,t) => Math.min(m, t.order), 0);
+
+// ---------- undo ----------
+let undoSnap = null;
+function snapshot(){ undoSnap = JSON.stringify(db.tasks); }
+function undo(){ if (!undoSnap) return; db.tasks = JSON.parse(undoSnap); undoSnap = null; save(); render(); }
+
+// ---------- quick add parser ----------
+function parseQuick(text){
+  let s = " "+text.trim()+" ";
+  const t = {id:uid(), title:"", notes:"", date:today(), time:"", repeat:"none", days:[], remind:db.settings.defaultRemind, priority:"normal", createdAt:Date.now(), order:minOrder()-1};
+  if (/(^|\s)!(\s|$)/.test(s) || /\b(urgent|important)\b/i.test(s)) { t.priority = "high"; s = s.replace(/(^|\s)!(?=\s|$)/g," "); }
+  const rx = (re, fn) => { const m = s.match(re); if (m){ fn(m); s = s.replace(re," "); } };
+  rx(/\b(every\s+month|monthly)\b/i, () => t.repeat = "monthly");
+  rx(/\b(every\s*day|everyday|daily)\b/i, () => t.repeat = "daily");
+  rx(/\b(every\s+)?weekdays?\b/i, () => t.repeat = "weekdays");
+  rx(/\bevery\s+(sun|mon|tue|wed|thu|fri|sat)[a-z]*\b/i, m => { t.repeat="weekly"; t.days=[DAYS.map(x=>x.toLowerCase()).indexOf(m[1].toLowerCase())]; });
+  rx(/\btomorrow\b/i, () => t.date = addDays(today(),1));
+  if (t.repeat === "none") rx(/\b(?:on\s+)?(sun|mon|tue|wed|thu|fri|sat)[a-z]*day\b/i, m => {
+    const want = DAYS.map(x=>x.toLowerCase()).indexOf(m[1].toLowerCase());
+    let d = today(); while (parseYmd(d).getDay() !== want) d = addDays(d,1); t.date = d; });
+  rx(/\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i, m => { let h=+m[1]%12; if (m[3].toLowerCase()==="pm") h+=12; t.time = pad(h)+":"+pad(+(m[2]||0)); });
+  if (!t.time) rx(/\b(?:at\s+)?([01]?\d|2[0-3])[:.]([0-5]\d)\b/, m => t.time = pad(+m[1])+":"+m[2]);
+  if (!t.time) rx(/\bat\s+(\d{1,2})\b/i, m => { let h=+m[1]; if (h>=1 && h<=7) h+=12; t.time = pad(h)+":00"; });
+  t.title = s.replace(/\s+/g," ").replace(/\s+(at|on)\s*$/i,"").trim();
+  if (!t.time) t.remind = -1;
+  return t;
+}
+function describe(t){
+  const bits = [];
+  if (t.date !== today()) bits.push(short(t.date));
+  if (t.time) bits.push(fmtTime(t.time));
+  if (t.repeat !== "none") bits.push(repeatLabel(t));
+  if (t.priority === "high") bits.push("high priority");
+  return bits.join(" · ");
+}
+
+// ---------- rendering ----------
+let view = "today", selId = null;
+function taskRow(t, d, opts={}){
+  const done = isDone(t,d);
+  const over = d === today() && t.time && !done && nowHM() > t.time;
+  const carried = d === today() && t.repeat === "none" && t.date < d;
+  const m = [];
+  if (t.priority === "high") m.push(`<span class="chip prio">! High</span>`);
+  if (t.time) m.push(`<span>🕑 ${fmtTime(t.time)}</span>`);
+  if (opts.showDate && t.repeat === "none") m.push(`<span>${short(t.date)}</span>`);
+  if (t.repeat !== "none") m.push(`<span class="chip rep">↻ ${esc(repeatLabel(t))}</span>`);
+  if (carried && !done) m.push(`<span class="chip carry">from ${short(t.date)}</span>`);
+  if (over) m.push(`<span class="chip over">overdue</span>`);
+  if (t.remind >= 0 && t.time && !done) m.push(`<span title="Reminder">🔔 ${t.remind ? t.remind+" min before" : "on time"}</span>`);
+  const drag = opts.drag !== false;
+  return `<div class="task ${done?"done":""} ${t.priority==="high"?"high":""} ${selId===t.id?"sel":""}" data-id="${t.id}" data-date="${d}" ${drag?'draggable="true"':""}>
+    <span class="handle" title="Drag to move">${drag?"⋮⋮":""}</span>
+    ${opts.noCheck ? "" : `<button class="check" title="${done?"Mark not done":"Mark done"}">✓</button>`}
+    <div class="body"><div class="title">${esc(t.title)}</div>
+      ${m.length ? `<div class="meta">${m.join("")}</div>` : ""}
+      ${t.notes ? `<div class="notes">${esc(t.notes)}</div>` : ""}</div>
+    <button class="x" data-act="del" title="Delete">✕</button>
+  </div>`;
+}
+function render(){
+  $("todayLabel").textContent = nice(today());
+  for (const s of document.querySelectorAll("main section")) s.classList.toggle("hidden", s.id !== "view-"+view);
+  for (const b of document.querySelectorAll("#nav button")) b.classList.toggle("on", b.dataset.view === view);
+  $("notifNotice").classList.toggle("hidden", (IS_ANDROID && !swReg) || !("Notification" in window) || Notification.permission !== "default");
+  $("phoneHint").classList.toggle("hidden", !IS_ANDROID);
+  const d = today(), all = tasksFor(d), open = all.filter(t => !isDone(t,d));
+  $("badgeToday").textContent = open.length || "";
+  Backup.renderStatus();
+
+  if (view === "today"){
+    const done = all.filter(t => isDone(t,d));
+    open.sort(db.settings.sort === "time" ? ((a,b) => byTime(a,b) || byOrder(a,b)) : byOrder);
+    for (const b of document.querySelectorAll("#sortSeg button")) b.classList.toggle("on", b.dataset.sort === db.settings.sort);
+    $("todayCount").textContent = all.length ? `${done.length} of ${all.length} done` : "";
+    $("todayBar").style.width = all.length ? (100*done.length/all.length)+"%" : "0";
+    $("todayList").innerHTML = open.length ? open.map(t => taskRow(t,d)).join("")
+      : `<div class="empty">${all.length ? "🎉 All done for today!" : "Nothing planned yet. Add your first task above."}</div>`;
+    $("doneWrap").classList.toggle("hidden", !done.length);
+    $("doneSum").textContent = `Completed (${done.length})`;
+    $("doneList").innerHTML = done.map(t => taskRow(t,d,{drag:false})).join("");
+    const log = $("dailyLog");
+    if (document.activeElement !== log) log.value = db.logs[d] || "";
+  }
+  if (view === "upcoming"){
+    let html = "";
+    for (let i=0;i<=14;i++){
+      const dd = addDays(d,i);
+      const list = (i === 0 ? open : db.tasks.filter(t => occursOn(t,dd) && !isDone(t,dd))).sort(byTime);
+      if (!list.length && i > 7) continue;
+      html += `<div class="card daycard" data-drop-date="${dd}"><div class="card-h"><h2>${dayName(dd)}</h2><span class="sub">${i<2?short(dd):""}</span><span class="spacer"></span><span class="sub">${list.length||""}</span></div>
+        <div class="list">${list.length ? list.map(t => taskRow(t,dd,{noCheck:i>0, drag:t.repeat==="none"})).join("") : `<div class="empty" style="padding:6px">Drop tasks here</div>`}</div></div>`;
+    }
+    $("upcomingList").innerHTML = html;
+  }
+  if (view === "all"){
+    const rep = db.tasks.filter(t => t.repeat !== "none").sort(byTime);
+    const once = db.tasks.filter(t => t.repeat === "none" && ($("showDoneAll").checked || !t.done)).sort((a,b) => a.date.localeCompare(b.date) || byTime(a,b));
+    $("repeatList").innerHTML = rep.length ? rep.map(t => taskRow(t,d,{noCheck:true, drag:false})).join("") : `<div class="empty">None yet. Try "Check emails 9:00 every day".</div>`;
+    $("onceList").innerHTML = once.length ? once.map(t => taskRow(t,t.date,{showDate:true, drag:false})).join("") : `<div class="empty">None.</div>`;
+  }
+  if (view === "history") $("historyBody").innerHTML = historyRows().map(r =>
+    `<tr><td>${short(r.date)}</td><td>${r.done}/${r.total}</td><td>${esc(r.titles.join(", "))}</td><td style="white-space:pre-wrap">${esc(r.log)}</td></tr>`).join("") || `<tr><td colspan="4" class="empty">History builds up as you use the app.</td></tr>`;
+  if (view === "settings"){
+    $("setSound").checked = db.settings.sound;
+    $("setDefaultRemind").value = db.settings.defaultRemind;
+    $("setMorning").value = db.settings.morning || "";
+  }
+  renderDrawer();
+}
+function historyRows(){
+  let first = today();
+  for (const t of db.tasks) if (t.date < first) first = t.date;
+  for (const k in db.logs) if (k < first) first = k;
+  const rows = [];
+  for (let d = today(); d >= first && rows.length < 366; d = addDays(d,-1)){
+    const sched = db.tasks.filter(t => occursOn(t,d));
+    const doneTitles = db.tasks.filter(t => t.repeat==="none" ? (t.done && t.doneAt===d) : (t.doneDates && t.doneDates[d])).map(t=>t.title);
+    if (!sched.length && !doneTitles.length && !db.logs[d]) continue;
+    rows.push({date:d, total:Math.max(sched.length, doneTitles.length), done:doneTitles.length, titles:doneTitles, log:db.logs[d]||""});
+  }
+  return rows;
+}
+
+// ---------- toasts ----------
+function toast(msg, withUndo){
+  const el = document.createElement("div"); el.className = "toast";
+  el.innerHTML = `<span>${esc(msg)}</span>${withUndo ? `<button>Undo</button>` : ""}`;
+  if (withUndo) el.querySelector("button").onclick = () => { undo(); el.remove(); };
+  $("toasts").appendChild(el);
+  setTimeout(() => el.remove(), withUndo ? 6000 : 3500);
+}
+
+// ---------- details drawer ----------
+function fillRemind(sel){ sel.innerHTML = REMIND_OPTS.map(([v,l]) => `<option value="${v}">${l}</option>`).join(""); }
+fillRemind($("dRemind")); fillRemind($("setDefaultRemind"));
+$("dDays").innerHTML = DAYS.map((n,i) => `<button data-day="${i}">${n}</button>`).join("");
+function openDrawer(id){ selId = id; render(); setTimeout(() => $("dTitle").focus(), 0); }
+function closeDrawer(){ selId = null; render(); }
+function renderDrawer(){
+  const t = selId && byId(selId);
+  $("drawer").classList.toggle("hidden", !t);
+  if (!t) return;
+  const act = document.activeElement;
+  const set = (id,v) => { if (act !== $(id)) $(id).value = v; };
+  set("dTitle", t.title); set("dNotes", t.notes||""); set("dDate", t.date); set("dTime", t.time||"");
+  set("dRepeat", t.repeat); set("dRemind", t.remind); set("dPrio", t.priority);
+  $("dDaysWrap").classList.toggle("hidden", t.repeat !== "weekly");
+  for (const b of $("dDays").children) b.classList.toggle("on", (t.days||[]).includes(+b.dataset.day));
+  const done = isDone(t, t.repeat === "none" ? t.date : today());
+  $("dDone").textContent = done ? "Mark not done" : (t.repeat === "none" ? "Mark complete" : "Done for today");
+  $("dCal").classList.toggle("hidden", !t.time);
+  $("dHint").textContent = !t.time && t.remind >= 0 ? "Set a time to get a reminder." : (t.repeat !== "none" ? "Repeats from " + short(t.date) + ". Ticking it off only affects that day." : "");
+}
+function drawerEdit(fn){
+  const t = byId(selId); if (!t) return;
+  const oldTime = t.time; fn(t);
+  if (t.repeat === "weekly" && !(t.days||[]).length) t.days = [parseYmd(t.date).getDay()];
+  if (t.time && t.remind < 0 && !oldTime) t.remind = db.settings.defaultRemind;
+  if (oldTime !== t.time) clearNotified(t.id);
+  save(); render();
+}
+$("dTitle").addEventListener("input", e => drawerEdit(t => t.title = e.target.value));
+$("dNotes").addEventListener("input", e => drawerEdit(t => t.notes = e.target.value));
+$("dDate").addEventListener("change", e => drawerEdit(t => t.date = e.target.value || today()));
+$("dTime").addEventListener("change", e => drawerEdit(t => t.time = e.target.value));
+$("dRepeat").addEventListener("change", e => drawerEdit(t => t.repeat = e.target.value));
+$("dRemind").addEventListener("change", e => drawerEdit(t => t.remind = +e.target.value));
+$("dPrio").addEventListener("change", e => drawerEdit(t => t.priority = e.target.value));
+$("dDays").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
+  drawerEdit(t => { const n = +b.dataset.day; t.days = (t.days||[]).includes(n) ? t.days.filter(x => x !== n) : [...(t.days||[]), n]; }); });
+$("dClose").onclick = closeDrawer;
+$("dDel").onclick = () => { const t = byId(selId); if (t) deleteTask(t); };
+$("dDone").onclick = () => { const t = byId(selId); if (!t) return; const d = t.repeat === "none" ? t.date : today();
+  snapshot(); setDone(t, d, !isDone(t,d)); save(); render(); };
+function deleteTask(t){
+  snapshot(); db.tasks = db.tasks.filter(x => x !== t); clearNotified(t.id);
+  if (selId === t.id) selId = null;
+  save(); render(); toast(`Deleted "${t.title}"`, true);
+}
+function clearNotified(id){ for (const k in db.notified) if (k.startsWith(id+"|")) delete db.notified[k]; }
+
+// ---------- events ----------
+$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b){ view = b.dataset.view; render(); } });
+$("sortSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (b){ db.settings.sort = b.dataset.sort; save(); render(); } });
+$("showDoneAll").onchange = render;
+$("quick").addEventListener("input", e => { const v = e.target.value.trim(); $("preview").textContent = v ? describe(parseQuick(v)) : ""; });
+$("quick").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const v = e.target.value.trim(); if (!v) return;
+  const t = parseQuick(v); if (!t.title) return;
+  db.tasks.push(t); save(); e.target.value = ""; $("preview").textContent = "";
+  render();
+  if (t.date !== today() || (t.repeat !== "none" && !occursOn(t,today()))) toast(`Added: ${t.repeat !== "none" ? repeatLabel(t) : dayName(t.date)}`);
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input,textarea,select")) { if (e.key === "Escape") e.target.blur(); return; }
+  if (e.key === "n" || e.key === "N"){ e.preventDefault(); view = "today"; render(); $("quick").focus(); }
+  if (e.key === "Escape" && selId) closeDrawer();
+});
+document.querySelector("main").addEventListener("click", e => {
+  const row = e.target.closest(".task"); if (!row) return;
+  const t = byId(row.dataset.id); if (!t) return;
+  const d = row.dataset.date;
+  if (e.target.closest(".check")){
+    const wasDone = isDone(t,d);
+    snapshot(); setDone(t,d,!wasDone); save();
+    if (!wasDone){ row.classList.add("completing"); setTimeout(render, 220); toast("Task completed", true); }
+    else render();
+  }
+  else if (e.target.closest("[data-act=del]")) deleteTask(t);
+  else openDrawer(t.id === selId ? null : t.id);
+});
+let logTimer;
+$("dailyLog").addEventListener("input", e => {
+  clearTimeout(logTimer); $("logSaved").textContent = "Saving...";
+  logTimer = setTimeout(() => {
+    const v = e.target.value; if (v.trim()) db.logs[today()] = v; else delete db.logs[today()];
+    save(); $("logSaved").textContent = "Saved.";
+  }, 400);
+});
+$("enableNotif").onclick = () => Notification.requestPermission().then(render);
+$("setSound").onchange = e => { db.settings.sound = e.target.checked; save(); };
+$("setDefaultRemind").onchange = e => { db.settings.defaultRemind = +e.target.value; save(); };
+$("setMorning").onchange = e => { db.settings.morning = e.target.value; save(); };
+$("testNotif").onclick = () => alertUser("Test reminder", "Reminders are working.", null);
+$("exportJson").onclick = async () => {
+  const name = IS_ANDROID ? "DailyTasks-backup.json" : `DailyTasks-backup-${today()}.json`, text = JSON.stringify(db,null,2);
+  try {
+    const file = new File([text], name, {type:"application/json"});
+    if (IS_ANDROID && navigator.canShare && navigator.canShare({files:[file]})) { await navigator.share({files:[file], title:name}); return; }
+  } catch(e){ if (e.name === "AbortError") return; }
+  download(name, text, "application/json");
+};
+$("importJson").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(txt => restoreFrom(txt)).catch(() => alert("That file is not a valid backup."));
+  e.target.value = "";
+};
+function restoreFrom(txt){
+  const d = JSON.parse(txt); if (!Array.isArray(d.tasks)) throw new Error("bad");
+  if (!confirm(`Replace your current data with this backup (${d.tasks.length} tasks)?`)) return;
+  db = load(d); selId = null; save(); render(); toast("Backup restored");
+}
+$("exportCsv").onclick = () => {
+  const q = s => '"'+String(s).replace(/"/g,'""')+'"';
+  const lines = [["Date","Done","Scheduled","Completed tasks","Log"].map(q).join(",")];
+  for (const r of historyRows()) lines.push([r.date,r.done,r.total,r.titles.join("; "),r.log].map(q).join(","));
+  download(`task-history-${today()}.csv`, "\ufeff"+lines.join("\r\n"), "text/csv");
+};
+// ---------- Google Calendar ----------
+const RRULE_DAYS = ["SU","MO","TU","WE","TH","FR","SA"];
+function rrule(t){
+  switch (t.repeat){
+    case "daily": return "FREQ=DAILY";
+    case "weekdays": return "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR";
+    case "weekly": return "FREQ=WEEKLY;BYDAY=" + (t.days||[]).slice().sort().map(i => RRULE_DAYS[i]).join(",");
+    case "monthly": return "FREQ=MONTHLY;BYMONTHDAY=" + parseYmd(t.date).getDate();
+  }
+  return "";
+}
+const icsStamp = (d, hm, addMin=0) => { const x = parseYmd(d); const [h,m] = hm.split(":").map(Number); x.setHours(h, m + addMin, 0, 0);
+  return x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+"T"+pad(x.getHours())+pad(x.getMinutes())+"00"; };
+// which tasks belong in the calendar: anything with a time that's still ahead or repeating
+function calTasks(){
+  return db.tasks.filter(t => t.time && (t.repeat !== "none" || !t.done));
+}
+// first date the event should start on: carried-over tasks go on today; repeats start on their first matching day
+function calStart(t){
+  let d = t.date < today() ? today() : t.date;
+  if (t.repeat !== "none") for (let i = 0; i < 400 && !occursOn(t,d); i++) d = addDays(d,1);
+  return d;
+}
+function buildIcs(){
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const icsEsc = v => String(v).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
+  const fold = line => { const out = []; let cur = ""; for (const ch of line){ if (new TextEncoder().encode(cur+ch).length > 74){ out.push(cur); cur = " "; } cur += ch; } out.push(cur); return out.join("\r\n"); };
+  const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Daily Tasks//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Daily Tasks","X-WR-TIMEZONE:"+tz];
+  const now = new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  for (const t of calTasks()){
+    const d = calStart(t);
+    L.push("BEGIN:VEVENT", "UID:"+t.id+"@dailytasks.local", "DTSTAMP:"+now,
+      `DTSTART;TZID=${tz}:${icsStamp(d,t.time)}`, `DTEND;TZID=${tz}:${icsStamp(d,t.time,15)}`,
+      "SUMMARY:"+icsEsc((t.priority === "high" ? "❗ " : "")+t.title));
+    if (t.notes) L.push("DESCRIPTION:"+icsEsc(t.notes));
+    if (t.repeat !== "none") L.push("RRULE:"+rrule(t));
+    if (t.remind >= 0) L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(t.title),"TRIGGER:-PT"+t.remind+"M","END:VALARM");
+    L.push("END:VEVENT");
+  }
+  L.push("END:VCALENDAR");
+  return L.map(fold).join("\r\n") + "\r\n";
+}
+function gcalLink(t){
+  const d = calStart(t);
+  const q = new URLSearchParams({action:"TEMPLATE", text:(t.priority === "high" ? "❗ " : "")+t.title,
+    dates: icsStamp(d,t.time)+"/"+icsStamp(d,t.time,15), ctz: Intl.DateTimeFormat().resolvedOptions().timeZone});
+  if (t.notes) q.set("details", t.notes);
+  if (t.repeat !== "none") q.set("recur", "RRULE:"+rrule(t));
+  return "https://calendar.google.com/calendar/render?" + q.toString();
+}
+$("calExport").onclick = () => {
+  const list = calTasks(), skipped = db.tasks.filter(t => !t.time && !(t.repeat === "none" && t.done)).length;
+  if (!list.length){ toast("Give your tasks a time first, then send them to the calendar."); return; }
+  download("DailyTasks.ics", buildIcs(), "text/calendar");
+  $("calSummary").innerHTML = `<b>${list.length}</b> task${list.length>1?"s":""} with a time ${list.length>1?"were":"was"} saved to <b>DailyTasks.ics</b>, with repeats and reminders.` +
+    (skipped ? ` ${skipped} task${skipped>1?"s":""} without a time ${skipped>1?"were":"was"} left out.` : "");
+  $("calTip").innerHTML = "Tip: in Google Calendar, make a calendar called <b>Daily Tasks</b> and import into it. You can then hide or delete them all in one go.";
+  $("calDlg").showModal();
+};
+$("calClose").onclick = () => $("calDlg").close();
+$("dCal").onclick = () => { const t = byId(selId); if (t && t.time) window.open(gcalLink(t), "_blank", "noopener"); };
+
+$("wipe").onclick = () => { if (confirm("Delete ALL tasks, logs and settings? This cannot be undone.")){ db = load(); selId = null; save(); render(); } };
+function download(name, text, type){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text],{type})); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------- drag and drop ----------
+let dragId = null;
+document.addEventListener("dragstart", e => {
+  const row = e.target.closest && e.target.closest(".task[draggable=true]"); if (!row) return;
+  dragId = row.dataset.id; row.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragId);
+});
+function endDrag(){
+  dragId = null;
+  document.querySelectorAll(".dragging,.drop-hover").forEach(el => el.classList.remove("dragging","drop-hover"));
+  document.querySelectorAll(".drop-line").forEach(el => el.remove());
+}
+document.addEventListener("dragend", endDrag);
+function afterEl(list, y){
+  let best = null, bestOff = -Infinity;
+  for (const el of list.querySelectorAll(".task:not(.dragging)")){
+    const r = el.getBoundingClientRect(), off = y - r.top - r.height/2;
+    if (off < 0 && off > bestOff){ bestOff = off; best = el; }
+  }
+  return best;
+}
+function dropTargetOf(e){
+  if (view === "today") { const l = e.target.closest("#todayList"); if (l) return {kind:"reorder", el:l}; }
+  const card = e.target.closest(".daycard"); if (card) return {kind:"day", el:card, date:card.dataset.dropDate};
+  const nb = e.target.closest("#nav [data-drop]"); if (nb) return {kind:"day", el:nb, date:addDays(today(),1)};
+  return null;
+}
+document.addEventListener("dragover", e => {
+  if (!dragId) return;
+  const tgt = dropTargetOf(e); if (!tgt) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = "move";
+  document.querySelectorAll(".drop-hover").forEach(el => el !== tgt.el && el.classList.remove("drop-hover"));
+  document.querySelectorAll(".drop-line").forEach(el => el.remove());
+  if (tgt.kind === "reorder"){
+    const line = document.createElement("div"); line.className = "drop-line";
+    const a = afterEl(tgt.el, e.clientY);
+    a ? tgt.el.insertBefore(line, a) : tgt.el.appendChild(line);
+  } else tgt.el.classList.add("drop-hover");
+});
+document.addEventListener("drop", e => {
+  if (!dragId) return;
+  const tgt = dropTargetOf(e); const t = byId(dragId); if (!tgt || !t) return;
+  e.preventDefault();
+  document.querySelectorAll(".drop-hover").forEach(el => el.classList.remove("drop-hover"));
+  if (tgt.kind === "reorder"){
+    const line = tgt.el.querySelector(".drop-line");
+    const ids = [...tgt.el.querySelectorAll(".task, .drop-line")].map(el => el.classList.contains("drop-line") ? "__drop" : el.dataset.id).filter(id => id !== dragId);
+    const at = ids.indexOf("__drop"); if (line) line.remove();
+    if (at < 0) return;
+    ids.splice(at, 1, dragId);
+    snapshot();
+    ids.forEach((id,i) => { const x = byId(id); if (x) x.order = i; });
+    if (db.settings.sort !== "mine"){ db.settings.sort = "mine"; toast("Switched to My order"); }
+    save(); endDrag(); render();
+  } else {
+    if (t.repeat !== "none"){ toast("Repeating tasks follow their schedule. Open the task to change it."); return; }
+    if (t.date === tgt.date) return;
+    snapshot(); t.date = tgt.date; clearNotified(t.id); save(); endDrag(); render();
+    toast(`Moved to ${dayName(tgt.date).replace(/^(Today|Tomorrow)$/, s => s.toLowerCase())}`, true);
+  }
+});
+
+// ---------- automatic backup to a folder ----------
+const Backup = (() => {
+  const supported = "showDirectoryPicker" in window;
+  const MAIN = "DailyTasks-backup.json", DAILY = /^DailyTasks-(\d{4}-\d{2}-\d{2})\.json$/, KEEP = 30;
+  let dir = null, state = supported ? "off" : "unsupported", timer = null, last = null, errMsg = "";
+  try { last = +localStorage.getItem(KEY+".lastBackup") || null; } catch(e){}
+  // tiny IndexedDB store, because folder handles can't go in localStorage
+  function idb(mode, fn){
+    return new Promise((res, rej) => {
+      const r = indexedDB.open("dailyTasks", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("kv");
+      r.onerror = () => rej(r.error);
+      r.onsuccess = () => { const tx = r.result.transaction("kv", mode); const q = fn(tx.objectStore("kv"));
+        tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); };
+    });
+  }
+  const getDir = () => idb("readonly", s => s.get("dir"));
+  const putDir = h => idb("readwrite", s => h ? s.put(h, "dir") : s.delete("dir"));
+  async function init(){
+    if (!supported) return render();
+    try { dir = await getDir(); } catch(e){ dir = null; }
+    if (!dir){ state = "off"; return render(); }
+    const p = await dir.queryPermission({mode:"readwrite"});
+    state = p === "granted" ? "on" : "paused";
+    render();
+    if (state === "on") run();
+  }
+  async function writeFile(name, text){
+    const fh = await dir.getFileHandle(name, {create:true});
+    const w = await fh.createWritable(); await w.write(text); await w.close();
+  }
+  async function run(){
+    if (state !== "on" || !dir) return;
+    try {
+      const text = JSON.stringify(Object.assign({}, db, {backupAt:new Date().toISOString()}), null, 1);
+      await writeFile(MAIN, text);
+      await writeFile(`DailyTasks-${today()}.json`, text);
+      const old = [];
+      for await (const [name] of dir.entries()) if (DAILY.test(name)) old.push(name);
+      old.sort().reverse().slice(KEEP).forEach(n => dir.removeEntry(n).catch(() => {}));
+      last = Date.now(); try { localStorage.setItem(KEY+".lastBackup", last); } catch(e){}
+      errMsg = "";
+    } catch(e){
+      if (e.name === "NotAllowedError" || e.name === "SecurityError") state = "paused";
+      else { state = "error"; errMsg = e.message; }
+    }
+    renderStatus();
+  }
+  function schedule(){ if (state !== "on") return; clearTimeout(timer); timer = setTimeout(run, 2000); }
+  async function pick(){
+    try { dir = await window.showDirectoryPicker({id:"dailytasks-backup", mode:"readwrite", startIn:"documents"}); }
+    catch(e){ return; }   // user cancelled
+    await putDir(dir).catch(() => {});
+    state = "on"; await run(); render();
+    if (state === "on") toast(`Backing up to "${dir.name}"`);
+  }
+  async function resume(){
+    if (!dir) return pick();
+    const p = await dir.requestPermission({mode:"readwrite"}).catch(() => "denied");
+    state = p === "granted" ? "on" : "paused";
+    if (state === "on") { await run(); toast("Automatic backup resumed"); }
+    render();
+  }
+  async function stop(){ dir = null; state = "off"; await putDir(null).catch(() => {}); render(); }
+  async function restore(){
+    if (!dir) return pick();
+    if (state !== "on") await resume();
+    if (state !== "on") return;
+    try { const f = await (await dir.getFileHandle(MAIN)).getFile(); restoreFrom(await f.text()); }
+    catch(e){ alert(`Couldn't find ${MAIN} in "${dir.name}".`); }
+  }
+  const ago = ts => { const s = (Date.now()-ts)/1000; return s < 60 ? "just now" : s < 3600 ? Math.round(s/60)+" min ago" : new Date(ts).toLocaleString(undefined,{weekday:"short",hour:"numeric",minute:"2-digit"}); };
+  function renderStatus(){
+    const name = dir ? esc(dir.name) : "";
+    const foot = $("backupFoot"), st = $("backupStatus"), notice = $("backupNotice");
+    let line = "", noticeHtml = "";
+    if (state === "unsupported") line = IS_ANDROID ? `<span class="dot"></span>Auto backup runs on your PC. On the phone, use Manual backup below.` : `<span class="dot"></span>Auto backup needs Edge or Chrome`;
+    else if (state === "off") { line = `<span class="dot warn"></span>Auto backup is off`;
+      if (!db.settings.backupNoticeHidden && db.tasks.length) noticeHtml = `<span>Keep your tasks safe: back them up automatically to a folder on this PC or your Google Drive.</span><button class="btn primary" data-b="pick">Choose folder</button><button class="btn ghost" data-b="hide">Not now</button>`; }
+    else if (state === "paused") { line = `<span class="dot warn"></span>Backup paused`;
+      noticeHtml = `<span>Automatic backup to "${name}" is paused until you allow it again.</span><button class="btn primary" data-b="resume">Resume backup</button>`; }
+    else if (state === "error") line = `<span class="dot warn"></span>Backup failed: ${esc(errMsg)}`;
+    else line = `<span class="dot on"></span>Backed up to "${name}" ${last ? ago(last) : ""}`;
+    foot.innerHTML = line + (state === "paused" ? ` <button data-b="resume">Resume</button>` : state === "off" ? ` <button data-b="pick">Set up</button>` : "");
+    st.innerHTML = line;
+    notice.innerHTML = noticeHtml; notice.classList.toggle("hidden", !noticeHtml || view === "settings");
+    $("backupBtns").classList.toggle("hidden", state === "unsupported");
+    $("pickFolder").textContent = dir ? "Change folder" : "Choose backup folder";
+    $("backupNow").classList.toggle("hidden", !dir);
+    $("restoreFolder").classList.toggle("hidden", !dir);
+    $("stopBackup").classList.toggle("hidden", !dir);
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-b]"); if (!b) return;
+    if (b.dataset.b === "pick") pick();
+    if (b.dataset.b === "resume") resume();
+    if (b.dataset.b === "hide") { db.settings.backupNoticeHidden = true; save(); render(); }
+  });
+  $("pickFolder").onclick = pick;
+  $("backupNow").onclick = async () => { if (state !== "on") await resume(); await run(); if (state === "on") toast("Backed up"); };
+  $("restoreFolder").onclick = restore;
+  $("stopBackup").onclick = stop;
+  setInterval(renderStatus, 60000);
+  return {init, schedule, renderStatus, _test: h => { dir = h; state = "on"; return run(); }};
+})();
+
+// ---------- reminders ----------
+let audioCtx;
+function beep(){
+  if (!db.settings.sound) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    [0,0.25].forEach(off => { const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = 880; o.connect(g); g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime+off); g.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime+off+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+off+0.2);
+      o.start(audioCtx.currentTime+off); o.stop(audioCtx.currentTime+off+0.22); });
+  } catch(e){}
+}
+document.addEventListener("click", () => { try { audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)(); audioCtx.resume(); } catch(e){} }, {once:true});
+
+let titleFlash;
+function alertUser(title, body, task){
+  beep();
+  if ("Notification" in window && Notification.permission === "granted"){
+    const opts = {body, requireInteraction:true, tag: task ? task.id : "info", icon:"icon-192.png"};
+    if (swReg) swReg.showNotification(title, opts).catch(() => {});
+    else try { const n = new Notification(title, opts); n.onclick = () => { window.focus(); n.close(); }; } catch(e){}
+  }
+  const box = document.createElement("div"); box.className = "alert";
+  box.innerHTML = `<b>🔔 ${esc(title)}</b><div class="body">${esc(body)}</div><div class="row">
+    ${task ? `<button class="btn primary" data-a="done">Mark done</button><button class="btn" data-a="snooze">Snooze 10 min</button>` : ""}
+    <button class="btn" data-a="close">Dismiss</button></div>`;
+  box.onclick = e => {
+    const a = e.target.dataset.a; if (!a) return;
+    if (a === "done") { setDone(task, today(), true); save(); render(); }
+    if (a === "snooze") { db.snoozes[task.id+"|"+today()] = Date.now() + 10*60000; save(); }
+    box.remove(); if (!document.querySelector(".alert")) stopFlash();
+  };
+  $("banner").appendChild(box);
+  if (!titleFlash){ let on = false; titleFlash = setInterval(() => { document.title = (on = !on) ? "🔔 "+title : "Daily Tasks"; }, 1000); }
+}
+function stopFlash(){ clearInterval(titleFlash); titleFlash = null; document.title = "Daily Tasks"; }
+window.addEventListener("focus", () => { if (!document.querySelector(".alert")) stopFlash(); });
+
+let lastDay = today();
+function tick(){
+  const d = today(), now = new Date(), nowMin = now.getHours()*60 + now.getMinutes();
+  if (d !== lastDay){ lastDay = d; render(); Backup.schedule(); }   // new day: repeating tasks reset, unfinished ones carry over
+  if (db.settings.morning && !db.notified["morning|"+d] && nowMin >= minutes(db.settings.morning) && nowMin < minutes(db.settings.morning)+180){
+    db.notified["morning|"+d] = 1; save();
+    const list = tasksFor(d).filter(t => !isDone(t,d)).sort(byTime);
+    if (list.length) alertUser(`Good morning: ${list.length} task${list.length>1?"s":""} today`, list.slice(0,6).map(t => (t.time ? fmtTime(t.time)+"  " : "• ")+t.title).join("\n"), null);
+  }
+  for (const t of tasksFor(d)){
+    if (!t.time || t.remind < 0 || isDone(t,d)) continue;
+    const key = t.id+"|"+d+"|"+t.time, sk = t.id+"|"+d;
+    const due = minutes(t.time) - t.remind;
+    if (db.snoozes[sk]){
+      if (Date.now() >= db.snoozes[sk]){ delete db.snoozes[sk]; save(); alertUser(t.title, "Due "+fmtTime(t.time), t); }
+      continue;
+    }
+    // fire once; skip if the page was closed and it's now more than 2 hours late
+    if (!db.notified[key] && nowMin >= due && nowMin <= due + 120){
+      db.notified[key] = 1; save();
+      alertUser(t.title, (t.remind ? `Starts at ${fmtTime(t.time)}` : `Due now (${fmtTime(t.time)})`) + (t.notes ? "\n"+t.notes : ""), t);
+    }
+  }
+  for (const k in db.notified){ const p = k.split("|"); if (p[1] && p[1] < addDays(d,-3)) delete db.notified[k]; }
+}
+setInterval(() => { tick(); if (view === "today" && !document.querySelector(".dragging") && !$("drawer").contains(document.activeElement)) render(); }, 30000);
+window.addEventListener("storage", e => { if (e.key === KEY && e.newValue){ try { db = load(JSON.parse(e.newValue)); render(); } catch(_){} } });
+
+window.__dailyTasks = {Backup};
+render(); tick(); Backup.init();
+})();
+</script>
+</body>
+</html>
