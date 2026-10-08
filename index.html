@@ -928,7 +928,7 @@ const Backup = (() => {
 
 // ---------- sync through Google Drive (web version only) ----------
 const Sync = (() => {
-  const DEFAULT_CLIENT_ID = "";
+  const DEFAULT_CLIENT_ID = "272910497585-6or9f1v3rcq1cgeq7eqo0uulqrv7g36p.apps.googleusercontent.com";
   const SCOPE = "https://www.googleapis.com/auth/drive.appdata", FILE = "dailytasks-sync.json";
   const TOKEN_KEY = KEY + ".gtoken", META_KEY = KEY + ".sync";
   let token = null, exp = 0, fileId = null, busy = false, again = false, timer = null, tokenClient = null, gis = null;
