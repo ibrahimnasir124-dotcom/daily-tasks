@@ -5,146 +5,192 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daily Tasks</title>
 <style>
+/* Todoist-inspired look */
 :root{
-  --bg:#f5f7fb; --card:#ffffff; --text:#1f2430; --muted:#6b7385; --line:#e4e7ee; --hover:#f0f3f9;
-  --accent:#1a73e8; --accent-soft:#e8f0fe; --danger:#d93025; --ok:#188038; --warn:#b06000;
-  --shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.05);
+  --bg:#ffffff; --side:#fcfaf8; --card:#ffffff; --text:#202020; --muted:#808080; --line:#f0f0f0; --line2:#e6e6e6; --hover:#f2efed;
+  --accent:#dc4c3e; --accent-dark:#c3392c; --accent-soft:#ffefe5; --danger:#d1453b; --ok:#058527; --warn:#ad6200; --week:#692fc2;
+  --p1:#d1453b; --p2:#eb8909; --p3:#246fe0; --p4:#999999;
+  --shadow:0 1px 8px rgba(0,0,0,.08);
 }
 @media (prefers-color-scheme: dark){
-  :root{ --bg:#15181e; --card:#1e222a; --text:#e8eaed; --muted:#9aa0ab; --line:#2e333d; --hover:#262b35;
-    --accent:#8ab4f8; --accent-soft:#25324a; --danger:#f28b82; --ok:#81c995; --warn:#fdd663; --shadow:none; }
+  :root{ --bg:#1e1e1e; --side:#282828; --card:#262626; --text:#e8e8e8; --muted:#8f8f8f; --line:#333333; --line2:#3d3d3d; --hover:#333333;
+    --accent:#de4c4a; --accent-dark:#c43d3b; --accent-soft:#3b2a28; --danger:#ff7066; --ok:#25b84c; --warn:#ff9a14; --week:#a970ff;
+    --p1:#ff7066; --p2:#ff9a14; --p3:#5297ff; --p4:#8f8f8f; --shadow:0 1px 8px rgba(0,0,0,.4); }
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Segoe UI",system-ui,sans-serif;display:flex}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;display:flex;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit}
-input,select,textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+input,select,textarea{font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line2);border-radius:6px;padding:7px 9px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--muted)}
 textarea{resize:vertical;min-height:80px}
+a{color:var(--accent)}
 .hidden{display:none!important}
 
 /* sidebar */
-aside{width:230px;flex:none;background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 10px}
-aside h1{font-size:19px;margin:4px 12px 2px}
-aside .date{color:var(--muted);font-size:13px;margin:0 12px 16px}
-aside nav button{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:10px 14px;border-radius:0 20px 20px 0;cursor:pointer;text-align:left;color:var(--text)}
+aside{width:280px;flex:none;background:var(--side);display:flex;flex-direction:column;padding:12px 10px;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:8px;padding:6px 8px 10px}
+.brand .logo{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px}
+aside h1{font-size:15px;font-weight:600;margin:0}
+aside .date{color:var(--muted);font-size:12px;margin:-6px 8px 10px 42px}
+.side-add{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--accent);font-weight:600;text-align:left}
+.side-add:hover{background:var(--hover)}
+.side-add .pc{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:17px;line-height:1;font-weight:400}
+aside nav{margin-top:4px}
+aside nav button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:7px 8px;border-radius:6px;cursor:pointer;text-align:left;color:var(--text)}
 aside nav button:hover{background:var(--hover)}
-aside nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
-aside nav .ico{width:20px;text-align:center}
-aside nav .badge{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400}
+aside nav button.on{background:var(--accent-soft);color:var(--accent-dark)}
+@media (prefers-color-scheme: dark){ aside nav button.on{color:#ff8a80} }
+aside nav .ico{width:22px;display:grid;place-items:center;flex:none}
+aside nav .ico svg{width:20px;height:20px}
+aside nav .badge{margin-left:auto;font-size:12px;color:var(--muted)}
 aside nav button.drop-hover{outline:2px dashed var(--accent)}
-.cal-btn{margin:14px 6px 0;width:calc(100% - 12px);font-size:14px;padding:8px 10px;display:flex;align-items:center;justify-content:center;gap:8px}
-dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--text);width:min(520px,92vw);padding:20px}
-dialog::backdrop{background:rgba(0,0,0,.45)}
-dialog h2{margin:0 0 8px;font-size:18px}
-dialog ol{padding-left:20px;margin:8px 0} dialog li{margin:6px 0}
-.side-foot{margin-top:auto;padding:12px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.side-label{font-size:12px;font-weight:600;color:var(--muted);margin:16px 8px 4px}
+.cal-btn{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:7px 8px;border-radius:6px;cursor:pointer;text-align:left;color:var(--text)}
+.cal-btn:hover{background:var(--hover)}
+.side-foot{margin-top:auto;padding:10px 8px 4px;font-size:12px;color:var(--muted)}
 .side-foot button{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-size:12px;text-decoration:underline}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--muted)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--muted);vertical-align:1px}
 .dot.on{background:var(--ok)} .dot.warn{background:var(--warn)}
 
 /* main */
 .wrap{flex:1;display:flex;min-width:0;height:100vh}
-main{flex:1;overflow:auto;padding:24px}
-.col{max-width:760px;margin:0 auto}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow)}
-.card-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.card-h h2{font-size:18px;margin:0}
+main{flex:1;overflow:auto;padding:28px 40px 80px}
+.col{max-width:800px;margin:0 auto}
+.page-head{display:flex;align-items:flex-end;gap:12px;margin:8px 0 6px}
+.page-head h2{font-size:26px;font-weight:700;margin:0;letter-spacing:-.2px}
+.page-head .spacer{flex:1}
+.page-sub{color:var(--muted);font-size:13px;margin-bottom:18px;display:flex;align-items:center;gap:6px}
+.sec-head{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:12px 0 8px;border-bottom:1px solid var(--line);margin-top:10px}
+.sec-head .sub{font-weight:400;color:var(--muted)}
+.sec-head .spacer{flex:1}
+.sec-head .link{background:none;border:0;color:var(--accent);cursor:pointer;font-weight:400;font-size:13px;padding:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.card-h h2{font-size:16px;margin:0}
 .card-h .sub{color:var(--muted);font-size:13px}
 .card-h .spacer{flex:1}
-.btn{border:1px solid var(--line);background:var(--card);padding:7px 14px;border-radius:20px;cursor:pointer;white-space:nowrap}
-.btn:hover{background:var(--hover)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-@media (prefers-color-scheme: dark){ .btn.primary{color:#15181e} }
-.btn.ghost{border-color:transparent;background:none}
+.btn{border:0;background:var(--hover);padding:7px 12px;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:600;font-size:13px}
+.btn:hover{filter:brightness(.97)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-dark)}
+.btn.primary:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:none}
+.btn.ghost:hover{background:var(--hover)}
 .btn.danger{color:var(--danger)}
-.hint{color:var(--muted);font-size:13px;margin-top:6px}
-.notice{background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:12.5px;margin-top:6px}
+.notice{background:var(--accent-soft);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notice span{flex:1;min-width:200px}
 
-/* add row */
-.add{display:flex;align-items:center;gap:10px;padding:6px 4px;border-radius:10px}
-.add .plus{width:22px;height:22px;flex:none;display:grid;place-items:center;color:var(--accent);font-size:22px;line-height:1}
-.add input{border:0;background:none;padding:8px 0;outline:none!important}
-.add:focus-within{background:var(--hover)}
-.parse-preview{font-size:12px;color:var(--accent);margin:0 0 4px 36px;min-height:0}
+/* add task */
+.add-row{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:9px 0;cursor:pointer;color:var(--muted);text-align:left}
+.add-row .pl{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:20px;line-height:1}
+.add-row:hover{color:var(--accent)}
+.add-row:hover .pl{background:var(--accent);color:#fff;font-size:15px}
+.add-form{border:1px solid var(--line2);border-radius:10px;margin:8px 0;background:var(--card)}
+.add-form:focus-within{border-color:var(--muted)}
+.add-form .fields{padding:10px 12px 4px}
+.add-form input{border:0;padding:2px 0;background:none;outline:none!important}
+.add-form #quick{font-size:15px;font-weight:600}
+.add-form #quickDesc{font-size:13px;color:var(--text);margin-top:2px}
+.parse-preview{display:flex;gap:6px;flex-wrap:wrap;padding:6px 12px 10px;min-height:10px}
+.parse-preview .pchip{border:1px solid var(--line2);border-radius:5px;padding:2px 8px;font-size:12px;color:var(--muted)}
+.add-form .foot{display:flex;justify-content:flex-end;gap:8px;padding:8px 10px;border-top:1px solid var(--line)}
 
 /* task rows */
-.list{min-height:8px}
-.task{display:flex;align-items:flex-start;gap:6px;padding:8px 4px;border-radius:10px;position:relative;transition:background .12s, opacity .2s, transform .2s}
-.task:hover{background:var(--hover)}
-.task.sel{background:var(--accent-soft)}
-.handle{width:16px;flex:none;color:var(--muted);cursor:grab;opacity:0;padding-top:3px;font-size:14px;user-select:none;letter-spacing:-3px}
+.list{min-height:4px}
+.task{display:flex;align-items:flex-start;gap:4px;padding:9px 0 8px;border-bottom:1px solid var(--line);position:relative;transition:opacity .2s, transform .2s;background:var(--bg)}
+.task.sel .title{color:var(--accent)}
+.handle{position:absolute;left:-26px;top:9px;width:20px;color:var(--muted);cursor:grab;opacity:0;font-size:14px;user-select:none;letter-spacing:-3px;text-align:center}
 .task:hover .handle{opacity:.8}
 .task.dragging{opacity:.35}
-.task.completing{opacity:0;transform:translateX(20px)}
-.check{width:20px;height:20px;flex:none;border:2px solid var(--muted);border-radius:50%;background:none;cursor:pointer;margin-top:1px;padding:0;display:grid;place-items:center;font-size:12px;color:transparent}
-.check:hover{border-color:var(--accent);color:var(--accent)}
-.task.done .check{background:var(--accent);border-color:var(--accent);color:#fff}
-.task.high .check{border-color:var(--danger)}
-.task .body{flex:1;min-width:0;cursor:pointer;padding-left:6px}
-.task .title{word-wrap:break-word}
+.task.completing{opacity:0;transform:translateX(16px)}
+.check{--pc:var(--p4);width:18px;height:18px;flex:none;border:1px solid var(--pc);border-radius:50%;background:transparent;cursor:pointer;margin:1px 8px 0 0;padding:0;display:grid;place-items:center;font-size:10px;color:transparent;font-weight:700}
+.task.p1 .check{--pc:var(--p1);border-width:2px;background:color-mix(in srgb,var(--p1) 12%,transparent)}
+.task.p2 .check{--pc:var(--p2);border-width:2px;background:color-mix(in srgb,var(--p2) 12%,transparent)}
+.task.p3 .check{--pc:var(--p3);border-width:2px;background:color-mix(in srgb,var(--p3) 12%,transparent)}
+.check:hover{color:var(--pc)}
+.task.done .check{background:var(--pc);color:#fff}
+.task .body{flex:1;min-width:0;cursor:pointer}
+.task .title{word-wrap:break-word;font-size:14px}
 .task.done .title{text-decoration:line-through;color:var(--muted)}
-.meta{font-size:12px;color:var(--muted);display:flex;gap:6px 10px;flex-wrap:wrap;margin-top:2px;align-items:center}
-.notes{font-size:13px;color:var(--muted);margin-top:2px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.chip{padding:1px 8px;border-radius:10px;border:1px solid var(--line)}
-.chip.rep{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
-.chip.over{color:var(--danger);border-color:var(--danger)}
-.chip.carry{color:var(--warn);border-color:var(--warn)}
-.chip.prio{color:var(--danger);border-color:transparent;font-weight:600}
-.task .x{background:none;border:0;color:var(--muted);cursor:pointer;opacity:0;padding:2px 6px;border-radius:6px}
-.task:hover .x{opacity:1}
-.task .x:hover{background:var(--line);color:var(--text)}
-.empty{color:var(--muted);padding:14px 4px;text-align:center}
-.drop-line{height:2px;background:var(--accent);border-radius:2px;margin:0 4px}
-details.completed{margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
-details.completed summary{cursor:pointer;color:var(--muted);padding:6px 4px;list-style:none;user-select:none}
-details.completed summary::before{content:"▸ ";}
-details.completed[open] summary::before{content:"▾ ";}
-.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin:4px 0 6px}
+.meta{font-size:12px;color:var(--muted);display:flex;gap:4px 12px;flex-wrap:wrap;margin-top:3px;align-items:center}
+.notes{font-size:12.5px;color:var(--muted);margin-top:1px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chip{display:inline-flex;align-items:center;gap:3px}
+.chip svg{width:12px;height:12px}
+.chip.today{color:var(--ok)} .chip.tomorrow{color:var(--warn)} .chip.week{color:var(--week)} .chip.over{color:var(--danger)}
+.chip.rep{color:var(--muted)}
+.chip.carry{color:var(--danger)}
+.acts{display:flex;gap:2px;opacity:0;transition:opacity .1s}
+.task:hover .acts{opacity:1}
+.acts button{background:none;border:0;color:var(--muted);cursor:pointer;padding:3px 5px;border-radius:4px;line-height:1}
+.acts button:hover{background:var(--hover);color:var(--text)}
+.acts svg{width:17px;height:17px;display:block}
+.empty{color:var(--muted);padding:28px 4px;text-align:center}
+.empty .big{font-size:34px;display:block;margin-bottom:6px}
+.drop-line{height:2px;background:var(--accent);border-radius:2px}
+details.completed{margin-top:14px}
+details.completed summary{cursor:pointer;color:var(--muted);padding:6px 0;list-style:none;user-select:none;font-weight:600;font-size:13px}
+details.completed summary::before{content:"› ";display:inline-block;transition:transform .15s}
+details.completed[open] summary::before{transform:rotate(90deg)}
+.progress{height:3px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 8px}
 .progress div{height:100%;background:var(--ok);transition:width .3s}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:20px;overflow:hidden}
-.seg button{border:0;background:none;padding:4px 12px;cursor:pointer;font-size:13px;color:var(--muted)}
-.seg button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
-.daycard.drop-hover{outline:2px dashed var(--accent);outline-offset:2px}
+.seg{display:inline-flex;background:var(--hover);border-radius:6px;padding:2px}
+.seg button{border:0;background:none;padding:4px 10px;cursor:pointer;font-size:12.5px;color:var(--muted);border-radius:5px}
+.seg button.on{background:var(--card);color:var(--text);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.daycard{margin-bottom:18px}
+.daycard .sec-head{margin-top:0}
+.daycard.drop-hover{outline:2px dashed var(--accent);outline-offset:4px;border-radius:6px}
 
-/* details drawer */
-.drawer{width:360px;flex:none;background:var(--card);border-left:1px solid var(--line);height:100vh;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:4px}
-.drawer label{font-size:12px;color:var(--muted);margin-top:10px}
-.drawer .title-in{font-size:18px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;padding:6px 0}
-.drawer .top{display:flex;align-items:center;gap:8px}
+/* details panel */
+.drawer{width:400px;flex:none;background:var(--card);border-left:1px solid var(--line);height:100vh;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow)}
+.drawer label{font-size:12px;font-weight:600;color:var(--muted);margin-top:12px}
+.drawer .title-in{font-size:19px;font-weight:700;border:0;border-radius:0;background:none;padding:8px 0 4px}
+.drawer #dNotes{border:0;padding:0;min-height:60px;background:none}
+.drawer .top{display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
 .drawer .top .spacer{flex:1}
 .two{display:flex;gap:10px}.two>div{flex:1;display:flex;flex-direction:column}
 .days{display:flex;gap:4px;flex-wrap:wrap}
-.days button{border:1px solid var(--line);background:none;border-radius:16px;padding:4px 9px;cursor:pointer;font-size:13px}
+.days button{border:1px solid var(--line2);background:none;border-radius:5px;padding:4px 9px;cursor:pointer;font-size:12.5px}
 .days button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* toasts + alerts */
-#toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:30;align-items:center}
-.toast{background:#323232;color:#fff;border-radius:8px;padding:10px 14px;display:flex;gap:16px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:14px}
-.toast button{background:none;border:0;color:#8ab4f8;font-weight:600;cursor:pointer}
+#toasts{position:fixed;left:24px;bottom:24px;display:flex;flex-direction:column;gap:8px;z-index:30}
+.toast{background:#282828;color:#fff;border-radius:6px;padding:10px 14px;display:flex;gap:18px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:13px}
+.toast button{background:none;border:0;color:#ff9b8f;font-weight:700;cursor:pointer}
 #banner{position:fixed;right:20px;bottom:20px;max-width:360px;z-index:31;display:flex;flex-direction:column;gap:10px}
-.alert{background:var(--card);border:2px solid var(--accent);border-radius:14px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.alert{background:var(--card);border:1px solid var(--line2);border-left:4px solid var(--accent);border-radius:8px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .alert b{display:block;margin-bottom:4px}
-.alert .body{white-space:pre-wrap;font-size:14px}
+.alert .body{white-space:pre-wrap;font-size:13px}
 .alert .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 
-table{width:100%;border-collapse:collapse;font-size:14px}
+dialog{border:0;border-radius:10px;background:var(--card);color:var(--text);width:min(520px,92vw);padding:22px;box-shadow:0 15px 50px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog h2{margin:0 0 8px;font-size:18px}
+dialog ol{padding-left:20px;margin:8px 0} dialog li{margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{text-align:left;padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
 th{color:var(--muted);font-weight:600;border-top:0}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .setrow{display:flex;align-items:center;gap:10px;margin:10px 0}
-.setrow input[type=checkbox]{width:auto}
+.setrow input[type=checkbox]{width:auto;accent-color:var(--accent)}
 .setrow select,.setrow input[type=time]{width:auto}
-kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px}
+kbd{border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px}
+.log-box{margin-top:30px}
+.log-box textarea{min-height:110px;background:var(--side)}
+#fab{display:none}
 
-@media (max-width:900px){ .drawer{position:fixed;right:0;top:0;z-index:20;box-shadow:-8px 0 30px rgba(0,0,0,.2);width:min(360px,100vw)} }
-@media (hover:none){ .desk-only{display:none} .handle{display:none} .task .x{opacity:.6} }
+@media (max-width:900px){ .drawer{position:fixed;right:0;top:0;z-index:20;width:min(400px,100vw)} main{padding:24px 24px 90px} }
+@media (hover:none){ .desk-only{display:none} .handle{display:none} .acts{opacity:1} }
 @media (max-width:640px){
   .drawer{width:100vw}
-  body{flex-direction:column} aside{width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:8px}
-  aside nav{display:flex;flex-wrap:wrap} aside nav button{border-radius:20px;padding:8px 10px;width:auto} aside nav .lbl{display:none}
-  .side-foot{display:none} .wrap{height:auto} main{padding:12px}
+  body{flex-direction:column} aside{width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .brand{padding:4px} aside h1,aside .date,.side-add,.side-label,.cal-btn .lbl{display:none}
+  aside nav{display:flex;flex-wrap:wrap;margin:0} aside nav button{width:auto;padding:8px 10px} aside nav .lbl{display:none}
+  .cal-btn{width:auto;padding:8px 10px}
+  .side-foot{display:none} .wrap{height:auto} main{padding:14px 16px 90px}
+  .page-head h2{font-size:22px}
+  #fab{display:grid;position:fixed;right:20px;bottom:24px;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:30px;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:15;cursor:pointer}
 }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
@@ -154,17 +200,19 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
 </head>
 <body>
 <aside>
-  <h1>Daily Tasks</h1>
+  <div class="brand"><span class="logo">✓</span><h1>Daily Tasks</h1></div>
   <div class="date" id="todayLabel"></div>
+  <button class="side-add" id="sideAdd"><span class="pc">+</span>Add task</button>
   <nav id="nav">
-    <button data-view="today" class="on"><span class="ico">☀</span><span class="lbl">Today</span><span class="badge" id="badgeToday"></span></button>
-    <button data-view="upcoming" data-drop="tomorrow"><span class="ico">📅</span><span class="lbl">Upcoming</span></button>
-    <button data-view="all"><span class="ico">☰</span><span class="lbl">All tasks</span></button>
-    <button data-view="history"><span class="ico">🕘</span><span class="lbl">History</span></button>
-    <button data-view="settings"><span class="ico">⚙</span><span class="lbl">Settings &amp; backup</span></button>
+    <button data-view="today" class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9h17"/><text id="todayNum" x="12" y="18" text-anchor="middle" font-size="7.5" font-weight="700" fill="currentColor" stroke="none">1</text></svg></span><span class="lbl">Today</span><span class="badge" id="badgeToday"></span></button>
+    <button data-view="upcoming" data-drop="tomorrow"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9h17M8 3v3M16 3v3"/><circle cx="8.5" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="15.5" cy="13" r=".9" fill="currentColor"/><circle cx="8.5" cy="16.5" r=".9" fill="currentColor"/><circle cx="12" cy="16.5" r=".9" fill="currentColor"/></svg></span><span class="lbl">Upcoming</span></button>
+    <button data-view="all"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 13.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4.5M4 13.5 6.5 5h11l2.5 8.5M4 13.5h4.5a3.5 3.5 0 0 0 7 0H20"/></svg></span><span class="lbl">All tasks</span><span class="badge" id="badgeAll"></span></button>
+    <button data-view="history"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span class="lbl">History</span></button>
+    <button data-view="settings"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg></span><span class="lbl">Settings &amp; backup</span></button>
   </nav>
-  <button class="btn primary cal-btn" id="calExport" title="Put your timed tasks and reminders into Google Calendar">📲 Send to phone calendar</button>
-  <div class="side-foot" style="display:block"><div id="syncFoot" style="margin-bottom:6px"></div><div id="backupFoot"></div></div>
+  <div class="side-label">Calendar</div>
+  <button class="cal-btn" id="calExport" title="Download your timed tasks as a calendar file"><span class="ico" style="width:22px;display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><span class="lbl">Send to phone calendar</span></button>
+  <div class="side-foot"><div id="syncFoot" style="margin-bottom:6px"></div><div id="backupFoot"></div></div>
 </aside>
 
 <div class="wrap">
@@ -179,40 +227,52 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
 
   <!-- TODAY -->
   <section id="view-today">
-    <div class="card">
-      <div class="card-h">
-        <h2>Today</h2><span class="sub" id="todayCount"></span><span class="spacer"></span>
-        <div class="seg" id="sortSeg" title="How to order today's list"><button data-sort="mine">My order</button><button data-sort="time">By time</button></div>
-      </div>
-      <div class="progress"><div id="todayBar" style="width:0"></div></div>
-      <div class="add"><span class="plus">+</span><input id="quick" placeholder="Add a task" autocomplete="off"></div>
-      <div class="parse-preview" id="preview"></div>
-      <div class="list" id="todayList" data-list="today"></div>
-      <details class="completed" id="doneWrap"><summary id="doneSum"></summary><div id="doneList"></div></details>
+    <div class="page-head"><h2>Today</h2><span class="spacer"></span>
+      <div class="seg" id="sortSeg" title="How to order today's list"><button data-sort="mine">My order</button><button data-sort="time">By time</button></div></div>
+    <div class="page-sub" id="todayCount"></div>
+    <div class="progress"><div id="todayBar" style="width:0"></div></div>
+    <div id="overdueWrap" class="hidden">
+      <div class="sec-head">Overdue<span class="spacer"></span><button class="link" id="rescheduleAll">Move to today</button></div>
+      <div class="list" id="overdueList"></div>
+      <div class="sec-head" id="todayHead"></div>
     </div>
-    <div class="hint" style="margin:-6px 4px 16px">Tip: type "Send report at 4pm", "Check emails 9:00 every day" or "Team call 14:30 weekdays !".<span class="desk-only"> Drag <span style="letter-spacing:-3px">⋮⋮</span> to reorder, or drop a task on <b>Upcoming</b> to move it to tomorrow. Press <kbd>N</kbd> to add a task.</span></div>
+    <div class="list" id="todayList" data-list="today"></div>
+    <button class="add-row" id="addRow"><span class="pl">+</span>Add task</button>
+    <div class="add-form hidden" id="addForm">
+      <div class="fields">
+        <input id="quick" placeholder="Task name" autocomplete="off">
+        <input id="quickDesc" placeholder="Description" autocomplete="off">
+      </div>
+      <div class="parse-preview" id="preview"></div>
+      <div class="foot"><button class="btn" id="addCancel">Cancel</button><button class="btn primary" id="addSubmit" disabled>Add task</button></div>
+    </div>
+    <details class="completed" id="doneWrap"><summary id="doneSum"></summary><div id="doneList"></div></details>
+    <div class="hint desk-only" style="margin-top:14px">Type naturally: "Send report at 4pm", "Check emails 9:00 every day", "Team call 14:30 weekdays p1". Drag tasks to reorder, or onto <b>Upcoming</b> to move them to tomorrow. Press <kbd>N</kbd> to add a task.</div>
 
-    <div class="card">
-      <div class="card-h"><h2>Daily log</h2><span class="sub">notes, numbers, anything you track each day</span></div>
-      <textarea id="dailyLog" placeholder="What happened today, figures to record, follow-ups..." style="min-height:110px"></textarea>
+    <div class="log-box">
+      <div class="sec-head" style="margin-bottom:10px">Daily log<span class="sub">notes, numbers, anything you track each day</span></div>
+      <textarea id="dailyLog" placeholder="What happened today, figures to record, follow-ups..."></textarea>
       <div class="hint" id="logSaved">Saves automatically.</div>
     </div>
   </section>
 
   <!-- UPCOMING -->
   <section id="view-upcoming" class="hidden">
-    <div class="hint" style="margin:0 4px 12px">Drag a task onto another day to reschedule it.</div>
+    <div class="page-head"><h2>Upcoming</h2></div>
+    <div class="page-sub">Drag a task onto another day to reschedule it.</div>
     <div id="upcomingList"></div>
   </section>
 
   <!-- ALL -->
   <section id="view-all" class="hidden">
-    <div class="card"><div class="card-h"><h2>Repeating tasks</h2></div><div id="repeatList"></div></div>
-    <div class="card"><div class="card-h"><h2>One-time tasks</h2><span class="spacer"></span><label class="sub"><input type="checkbox" id="showDoneAll" style="width:auto"> show completed</label></div><div id="onceList"></div></div>
+    <div class="page-head"><h2>All tasks</h2></div>
+    <div class="sec-head">Repeating</div><div id="repeatList" style="margin-bottom:22px"></div>
+    <div class="sec-head">One-time<span class="spacer"></span><label class="sub" style="font-size:12.5px"><input type="checkbox" id="showDoneAll" style="width:auto;vertical-align:-2px"> show completed</label></div><div id="onceList"></div>
   </section>
 
   <!-- HISTORY -->
   <section id="view-history" class="hidden">
+    <div class="page-head"><h2>History</h2></div><div class="page-sub">What you finished each day, with your daily log.</div>
     <div class="card">
       <div class="card-h"><h2>Past days</h2><span class="spacer"></span><button class="btn" id="exportCsv">Export to CSV (Excel)</button></div>
       <table><thead><tr><th>Date</th><th>Done</th><th>Tasks completed</th><th>Log</th></tr></thead><tbody id="historyBody"></tbody></table>
@@ -221,6 +281,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
 
   <!-- SETTINGS -->
   <section id="view-settings" class="hidden">
+    <div class="page-head"><h2>Settings &amp; backup</h2></div><div class="page-sub"></div>
     <div class="card">
       <div class="card-h"><h2>Sync between your devices</h2></div>
       <div id="syncHosted">
@@ -277,6 +338,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
   </section>
  </div>
 </main>
+<button id="fab" title="Add task">+</button>
 
 <div class="drawer hidden" id="drawer">
   <div class="top">
@@ -303,7 +365,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
   <div id="dDaysWrap" class="hidden"><label>Days</label><div class="days" id="dDays"></div></div>
   <div class="two">
     <div><label for="dRemind">Remind me</label><select id="dRemind"></select></div>
-    <div><label for="dPrio">Priority</label><select id="dPrio"><option value="normal">Normal</option><option value="high">High</option></select></div>
+    <div><label for="dPrio">Priority</label><select id="dPrio"><option value="high">🚩 Priority 1</option><option value="p2">🚩 Priority 2</option><option value="p3">🚩 Priority 3</option><option value="normal">Priority 4</option></select></div>
   </div>
   <div class="hint" id="dHint"></div>
   <button class="btn" id="dCal" style="margin-top:12px;align-self:flex-start">📅 Add to Google Calendar</button>
@@ -442,6 +504,7 @@ function repeatLabel(t){
   return "";
 }
 const minOrder = () => db.tasks.reduce((m,t) => Math.min(m, t.order), 0);
+const prioN = t => t.priority === "high" ? 1 : t.priority === "p2" ? 2 : t.priority === "p3" ? 3 : 4;
 
 // ---------- undo ----------
 let undoSnap = null;
@@ -454,6 +517,7 @@ function parseQuick(text){
   const t = {id:uid(), title:"", notes:"", date:today(), time:"", repeat:"none", days:[], remind:db.settings.defaultRemind, priority:"normal", createdAt:Date.now(), order:minOrder()-1};
   if (/(^|\s)!(\s|$)/.test(s) || /\b(urgent|important)\b/i.test(s)) { t.priority = "high"; s = s.replace(/(^|\s)!(?=\s|$)/g," "); }
   const rx = (re, fn) => { const m = s.match(re); if (m){ fn(m); s = s.replace(re," "); } };
+  rx(/(?:^|\s)!?p([1-4])(?=\s|$)/i, m => t.priority = ["", "high", "p2", "p3", "normal"][+m[1]]);
   rx(/\b(every\s+month|monthly)\b/i, () => t.repeat = "monthly");
   rx(/\b(every\s*day|everyday|daily)\b/i, () => t.repeat = "daily");
   rx(/\b(every\s+)?weekdays?\b/i, () => t.repeat = "weekdays");
@@ -471,55 +535,78 @@ function parseQuick(text){
 }
 function describe(t){
   const bits = [];
-  if (t.date !== today()) bits.push(short(t.date));
+  bits.push("📅 " + (t.repeat !== "none" ? repeatLabel(t) : dayName(t.date)));
   if (t.time) bits.push(fmtTime(t.time));
-  if (t.repeat !== "none") bits.push(repeatLabel(t));
-  if (t.priority === "high") bits.push("high priority");
-  return bits.join(" · ");
+  if (prioN(t) < 4) bits.push("🚩 Priority " + prioN(t));
+  if (t.remind >= 0 && t.time) bits.push("🔔 " + (t.remind ? t.remind + " min before" : "on time"));
+  return bits;
 }
 
 // ---------- rendering ----------
 let view = "today", selId = null;
+const SVG = {
+  cal:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="1.5" y="2" width="9" height="8.5" rx="1.5"/><path d="M1.5 4.5h9M4 1v2M8 1v2"/></svg>',
+  rep:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M2 6a4 4 0 0 1 6.8-2.8L10 4.5M10 2v2.5H7.5M10 6a4 4 0 0 1-6.8 2.8L2 7.5M2 10V7.5h2.5"/></svg>',
+  bell:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M3 8V5.5a3 3 0 1 1 6 0V8l.8 1H2.2z"/><path d="M5 10.5a1 1 0 0 0 2 0"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 19.5h3.2L18.6 8.6a2.2 2.2 0 0 0-3.2-3.2L4.5 16.3z"/><path d="M14 7l3 3"/></svg>',
+  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v6M13.5 10.5v6"/></svg>',
+  note:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M2 3h8M2 6h8M2 9h5"/></svg>'
+};
+// Todoist-style date label: green today, orange tomorrow, purple this week, red overdue
+function dateChip(d, t, overdue){
+  const dd = parseYmd(d), diff = Math.round((dd - parseYmd(today())) / 864e5);
+  let label, cls;
+  if (diff < 0){ label = short(d).replace(/^\w+,?\s*/, ""); cls = "over"; }
+  else if (diff === 0){ label = "Today"; cls = overdue ? "over" : "today"; }
+  else if (diff === 1){ label = "Tomorrow"; cls = "tomorrow"; }
+  else if (diff < 7){ label = dd.toLocaleDateString(undefined,{weekday:"long"}); cls = "week"; }
+  else { label = dd.toLocaleDateString(undefined,{day:"numeric", month:"short"}); cls = ""; }
+  if (t.time) label += " " + fmtTime(t.time);
+  return `<span class="chip ${cls}">${SVG.cal}${label}</span>`;
+}
 function taskRow(t, d, opts={}){
   const done = isDone(t,d);
-  const over = d === today() && t.time && !done && nowHM() > t.time;
   const carried = d === today() && t.repeat === "none" && t.date < d;
+  const late = d === today() && t.time && !done && nowHM() > t.time;
   const m = [];
-  if (t.priority === "high") m.push(`<span class="chip prio">! High</span>`);
-  if (t.time) m.push(`<span>🕑 ${fmtTime(t.time)}</span>`);
-  if (opts.showDate && t.repeat === "none") m.push(`<span>${short(t.date)}</span>`);
-  if (t.repeat !== "none") m.push(`<span class="chip rep">↻ ${esc(repeatLabel(t))}</span>`);
-  if (carried && !done) m.push(`<span class="chip carry">from ${short(t.date)}</span>`);
-  if (over) m.push(`<span class="chip over">overdue</span>`);
-  if (t.remind >= 0 && t.time && !done) m.push(`<span title="Reminder">🔔 ${t.remind ? t.remind+" min before" : "on time"}</span>`);
+  if (opts.showDate || carried || t.time || d !== today()) m.push(dateChip(carried ? t.date : d, t, (carried || late) && !done));
+  if (t.repeat !== "none") m.push(`<span class="chip rep" title="${esc(repeatLabel(t))}">${SVG.rep}${opts.showDate || d !== today() ? esc(repeatLabel(t)) : ""}</span>`);
+  if (t.remind >= 0 && t.time && !done) m.push(`<span class="chip" title="Reminder ${t.remind ? t.remind+" min before" : "on time"}">${SVG.bell}</span>`);
   const drag = opts.drag !== false;
-  return `<div class="task ${done?"done":""} ${t.priority==="high"?"high":""} ${selId===t.id?"sel":""}" data-id="${t.id}" data-date="${d}" ${drag?'draggable="true"':""}>
+  return `<div class="task p${prioN(t)} ${done?"done":""} ${selId===t.id?"sel":""}" data-id="${t.id}" data-date="${d}" ${drag?'draggable="true"':""}>
     <span class="handle" title="Drag to move">${drag?"⋮⋮":""}</span>
-    ${opts.noCheck ? "" : `<button class="check" title="${done?"Mark not done":"Mark done"}">✓</button>`}
+    ${opts.noCheck ? "" : `<button class="check" title="${done?"Mark not done":"Complete"}">✓</button>`}
     <div class="body"><div class="title">${esc(t.title)}</div>
-      ${m.length ? `<div class="meta">${m.join("")}</div>` : ""}
-      ${t.notes ? `<div class="notes">${esc(t.notes)}</div>` : ""}</div>
-    <button class="x" data-act="del" title="Delete">✕</button>
+      ${t.notes ? `<div class="notes">${esc(t.notes)}</div>` : ""}
+      ${m.length ? `<div class="meta">${m.join("")}</div>` : ""}</div>
+    <div class="acts"><button data-act="edit" title="Edit">${SVG.edit}</button><button data-act="del" title="Delete">${SVG.del}</button></div>
   </div>`;
 }
 function render(){
   $("todayLabel").textContent = nice(today());
+  $("todayNum").textContent = new Date().getDate();
   for (const s of document.querySelectorAll("main section")) s.classList.toggle("hidden", s.id !== "view-"+view);
   for (const b of document.querySelectorAll("#nav button")) b.classList.toggle("on", b.dataset.view === view);
   $("notifNotice").classList.toggle("hidden", (IS_ANDROID && !swReg) || !("Notification" in window) || Notification.permission !== "default");
   $("phoneHint").classList.toggle("hidden", !IS_ANDROID);
   const d = today(), all = tasksFor(d), open = all.filter(t => !isDone(t,d));
   $("badgeToday").textContent = open.length || "";
+  $("badgeAll").textContent = db.tasks.filter(t => t.repeat !== "none" || !t.done).length || "";
   Backup.renderStatus(); Sync.renderStatus();
 
   if (view === "today"){
     const done = all.filter(t => isDone(t,d));
     open.sort(db.settings.sort === "time" ? ((a,b) => byTime(a,b) || byOrder(a,b)) : byOrder);
     for (const b of document.querySelectorAll("#sortSeg button")) b.classList.toggle("on", b.dataset.sort === db.settings.sort);
-    $("todayCount").textContent = all.length ? `${done.length} of ${all.length} done` : "";
+    const overdue = open.filter(t => t.repeat === "none" && t.date < d), todays = open.filter(t => !overdue.includes(t));
+    $("todayCount").innerHTML = all.length ? `<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="6" r="5"/><path d="M3.8 6.1 5.3 7.5 8.3 4.6"/></svg> ${open.length} task${open.length===1?"":"s"}${done.length ? ` · ${done.length} done` : ""}` : "";
     $("todayBar").style.width = all.length ? (100*done.length/all.length)+"%" : "0";
-    $("todayList").innerHTML = open.length ? open.map(t => taskRow(t,d)).join("")
-      : `<div class="empty">${all.length ? "🎉 All done for today!" : "Nothing planned yet. Add your first task above."}</div>`;
+    $("todayBar").parentNode.classList.toggle("hidden", !all.length);
+    $("overdueWrap").classList.toggle("hidden", !overdue.length);
+    $("overdueList").innerHTML = overdue.map(t => taskRow(t,d)).join("");
+    $("todayHead").textContent = `${parseYmd(d).toLocaleDateString(undefined,{day:"numeric", month:"short"})} · Today · ${parseYmd(d).toLocaleDateString(undefined,{weekday:"long"})}`;
+    $("todayList").innerHTML = todays.length ? todays.map(t => taskRow(t,d)).join("")
+      : overdue.length ? "" : `<div class="empty"><span class="big">${all.length ? "🎉" : "☀️"}</span>${all.length ? "You're all done for today!" : "What do you need to get done today?"}</div>`;
     $("doneWrap").classList.toggle("hidden", !done.length);
     $("doneSum").textContent = `Completed (${done.length})`;
     $("doneList").innerHTML = done.map(t => taskRow(t,d,{drag:false})).join("");
@@ -532,8 +619,9 @@ function render(){
       const dd = addDays(d,i);
       const list = (i === 0 ? open : db.tasks.filter(t => occursOn(t,dd) && !isDone(t,dd))).sort(byTime);
       if (!list.length && i > 7) continue;
-      html += `<div class="card daycard" data-drop-date="${dd}"><div class="card-h"><h2>${dayName(dd)}</h2><span class="sub">${i<2?short(dd):""}</span><span class="spacer"></span><span class="sub">${list.length||""}</span></div>
-        <div class="list">${list.length ? list.map(t => taskRow(t,dd,{noCheck:i>0, drag:t.repeat==="none"})).join("") : `<div class="empty" style="padding:6px">Drop tasks here</div>`}</div></div>`;
+      const D = parseYmd(dd), rel = i === 0 ? " · Today" : i === 1 ? " · Tomorrow" : "";
+      html += `<div class="daycard" data-drop-date="${dd}"><div class="sec-head">${D.toLocaleDateString(undefined,{day:"numeric", month:"short"})}${rel} · ${D.toLocaleDateString(undefined,{weekday:"long"})}<span class="spacer"></span><span class="sub">${list.length||""}</span></div>
+        <div class="list">${list.length ? list.map(t => taskRow(t,dd,{noCheck:i>0, drag:t.repeat==="none"})).join("") : `<div class="empty" style="padding:10px 0;text-align:left;font-size:12.5px">Nothing yet. Drop tasks here.</div>`}</div></div>`;
     }
     $("upcomingList").innerHTML = html;
   }
@@ -628,18 +716,45 @@ function clearNotified(id){ for (const k in db.notified) if (k.startsWith(id+"|"
 $("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b){ view = b.dataset.view; render(); } });
 $("sortSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (b){ db.settings.sort = b.dataset.sort; save(); render(); } });
 $("showDoneAll").onchange = render;
-$("quick").addEventListener("input", e => { const v = e.target.value.trim(); $("preview").textContent = v ? describe(parseQuick(v)) : ""; });
-$("quick").addEventListener("keydown", e => {
-  if (e.key !== "Enter") return;
-  const v = e.target.value.trim(); if (!v) return;
+// Todoist-style inline add form
+function openAdd(){
+  if (view !== "today"){ view = "today"; render(); }
+  $("addRow").classList.add("hidden"); $("addForm").classList.remove("hidden"); $("quick").focus();
+}
+function closeAdd(){
+  $("quick").value = ""; $("quickDesc").value = ""; showPreview();
+  $("addForm").classList.add("hidden"); $("addRow").classList.remove("hidden");
+}
+function showPreview(){
+  const v = $("quick").value.trim();
+  $("preview").innerHTML = v ? describe(parseQuick(v)).map(b => `<span class="pchip">${esc(b)}</span>`).join("") : "";
+  $("addSubmit").disabled = !v;
+}
+function addFromForm(){
+  const v = $("quick").value.trim(); if (!v) return;
   const t = parseQuick(v); if (!t.title) return;
-  db.tasks.push(t); save(); e.target.value = ""; $("preview").textContent = "";
+  t.notes = $("quickDesc").value.trim();
+  db.tasks.push(t); save();
+  $("quick").value = ""; $("quickDesc").value = ""; showPreview(); $("quick").focus();
   render();
   if (t.date !== today() || (t.repeat !== "none" && !occursOn(t,today()))) toast(`Added: ${t.repeat !== "none" ? repeatLabel(t) : dayName(t.date)}`);
+}
+$("quick").addEventListener("input", showPreview);
+for (const id of ["quick","quickDesc"]) $(id).addEventListener("keydown", e => {
+  if (e.key === "Enter"){ e.preventDefault(); addFromForm(); }
+  if (e.key === "Escape"){ e.stopPropagation(); closeAdd(); }
 });
+$("addRow").onclick = openAdd; $("sideAdd").onclick = openAdd; $("fab").onclick = openAdd;
+$("addCancel").onclick = closeAdd; $("addSubmit").onclick = addFromForm;
+$("rescheduleAll").onclick = () => {
+  const d = today(), list = db.tasks.filter(t => t.repeat === "none" && !t.done && t.date < d);
+  if (!list.length) return;
+  snapshot(); list.forEach(t => { t.date = d; clearNotified(t.id); }); save(); render();
+  toast(`Moved ${list.length} task${list.length>1?"s":""} to today`, true);
+};
 document.addEventListener("keydown", e => {
   if (e.target.matches("input,textarea,select")) { if (e.key === "Escape") e.target.blur(); return; }
-  if (e.key === "n" || e.key === "N"){ e.preventDefault(); view = "today"; render(); $("quick").focus(); }
+  if (e.key === "n" || e.key === "N" || e.key === "q" || e.key === "Q"){ e.preventDefault(); openAdd(); }
   if (e.key === "Escape" && selId) closeDrawer();
 });
 document.querySelector("main").addEventListener("click", e => {
