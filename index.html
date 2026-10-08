@@ -230,6 +230,8 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
           <button class="btn" id="syncNow">Sync now</button>
           <button class="btn ghost danger" id="syncOff">Turn off sync</button>
         </div>
+        <div class="setrow" style="align-items:flex-start"><input type="checkbox" id="calSyncOn" style="margin-top:3px"><label for="calSyncOn"><b>Phone alerts through Google Calendar.</b> Tasks with a time are kept in a "Daily Tasks" calendar, so your phone alerts you even when this app is closed.</label></div>
+        <div class="hint" id="calStatus" style="margin:-4px 0 8px 28px"></div>
         <details style="margin-top:10px" id="syncIdWrap"><summary class="hint" style="cursor:pointer">Google client ID</summary>
           <div class="row" style="margin-top:6px"><input id="syncClientId" placeholder="xxxxxxxx.apps.googleusercontent.com" style="flex:1;min-width:220px"><button class="btn" id="syncSaveId">Save</button></div>
         </details>
@@ -930,10 +932,12 @@ const Backup = (() => {
 const Sync = (() => {
   const DEFAULT_CLIENT_ID = "272910497585-6or9f1v3rcq1cgeq7eqo0uulqrv7g36p.apps.googleusercontent.com";
   const SCOPE = "https://www.googleapis.com/auth/drive.appdata", FILE = "dailytasks-sync.json";
+  const CAL_SCOPE = "https://www.googleapis.com/auth/calendar.app.created", CAL = "https://www.googleapis.com/calendar/v3";
   const TOKEN_KEY = KEY + ".gtoken", META_KEY = KEY + ".sync";
-  let token = null, exp = 0, fileId = null, busy = false, again = false, timer = null, tokenClient = null, gis = null;
+  let token = null, exp = 0, hasCal = false, calErr = "", fileId = null, busy = false, again = false, timer = null, tokenClient = null, gis = null;
   let meta = {}; try { meta = JSON.parse(localStorage.getItem(META_KEY) || "{}"); } catch(e){}
-  try { const t = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); if (t && t.exp > Date.now() + 60000){ token = t.token; exp = t.exp; } } catch(e){}
+  try { const t = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); if (t && t.exp > Date.now() + 60000){ token = t.token; exp = t.exp; hasCal = !!t.cal; } } catch(e){}
+  if (meta.cal === undefined) meta.cal = true;   // calendar alerts are on unless turned off
   let state = !HOSTED ? "local" : !meta.enabled ? "off" : token ? "ok" : "reconnect", err = "";
   const clientId = () => (db.settings.googleClientId || DEFAULT_CLIENT_ID).trim();
   const saveMeta = () => { try { localStorage.setItem(META_KEY, JSON.stringify(meta)); } catch(e){} };
@@ -955,9 +959,55 @@ const Sync = (() => {
       logStamps[d] = Math.max(Ls[d] || 0, Rs[d] || 0);
     }
     tasks.sort((a,b) => a.id < b.id ? -1 : 1);
-    return {tasks, logs, deleted:del, logStamps};
+    const c = !L.calId || (R.calId && (R.calIdAt || 0) >= (L.calIdAt || 0)) ? R : L;   // newest calendar wins
+    return {tasks, logs, deleted:del, logStamps, calId:c.calId || null, calIdAt:c.calIdAt || 0};
   }
-  const shared = d => ({tasks:d.tasks, logs:d.logs, deleted:d.deleted || {}, logStamps:d.logStamps || {}});
+  const shared = d => ({tasks:d.tasks, logs:d.logs, deleted:d.deleted || {}, logStamps:d.logStamps || {}, calId:d.calId || null, calIdAt:d.calIdAt || 0});
+
+  // ---- Google Calendar: one event per task with a time, kept up to date, with a phone alert at the reminder time ----
+  const tzName = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const evId = id => "dt" + Array.from(id).map(c => c.charCodeAt(0).toString(16)).join("");   // same event id on every device
+  const isoAt = (d, hm, add=0) => { const x = icsStamp(d, hm, add); return `${x.slice(0,4)}-${x.slice(4,6)}-${x.slice(6,8)}T${x.slice(9,11)}:${x.slice(11,13)}:00`; };
+  function eventFor(t){
+    if (!t.time || (t.repeat === "none" && t.done)) return null;
+    const d = calStart(t), tz = tzName();
+    const ev = {summary:(t.priority === "high" ? "❗ " : "") + t.title, description:(t.notes ? t.notes + "\n\n" : "") + "From Daily Tasks",
+      start:{dateTime:isoAt(d,t.time), timeZone:tz}, end:{dateTime:isoAt(d,t.time,15), timeZone:tz}, status:"confirmed", transparency:"transparent",
+      reminders:{useDefault:false, overrides: t.remind >= 0 ? [{method:"popup", minutes:t.remind}] : []}};
+    if (t.repeat !== "none"){
+      const skip = Object.keys(t.doneDates || {}).filter(x => x >= today() && occursOn(t,x)).map(x => icsStamp(x,t.time)).sort();
+      ev.recurrence = ["RRULE:" + rrule(t)].concat(skip.length ? [`EXDATE;TZID=${tz}:${skip.join(",")}`] : []);   // ticked-off days don't alert
+    }
+    return ev;
+  }
+  async function calSync(retry=true){
+    if (!meta.cal || !hasCal) return;
+    const json = {"Content-Type":"application/json"};
+    if (!db.calId || !retry){
+      const r = await (await api(`${CAL}/calendars`, {method:"POST", headers:json, body:JSON.stringify({summary:"Daily Tasks", description:"Tasks from the Daily Tasks app", timeZone:tzName()})})).json();
+      db.calId = r.id; db.calIdAt = Date.now(); persist(); again = true;   // share the new calendar with other devices
+    }
+    if (meta.calFor !== db.calId){ meta.calFor = db.calId; meta.calSigs = {}; }
+    const sigs = meta.calSigs, want = {};
+    for (const t of db.tasks) want[t.id] = eventFor(t);
+    for (const id in db.deleted) if (!(id in want)) want[id] = null;
+    const base = `${CAL}/calendars/${encodeURIComponent(db.calId)}/events`;
+    for (const id in want){
+      const ev = want[id], sig = ev ? JSON.stringify(ev) : "-";
+      if (sigs[id] === sig) continue;
+      if (ev){
+        let r = await api(`${base}/${evId(id)}`, {method:"PUT", headers:json, body:JSON.stringify(ev)}, [404]);
+        if (r.status === 404){
+          r = await api(base, {method:"POST", headers:json, body:JSON.stringify(Object.assign({id:evId(id)}, ev))}, [404, 409]);
+          if (r.status === 404){ if (!retry) throw new Error("Couldn't add events to the Daily Tasks calendar."); return calSync(false); }   // calendar was deleted: make a new one
+          if (r.status === 409) await api(`${base}/${evId(id)}`, {method:"PUT", headers:json, body:JSON.stringify(ev)});
+        }
+      } else await api(`${base}/${evId(id)}`, {method:"DELETE"}, [404, 410]);
+      sigs[id] = sig; saveMeta();
+    }
+    for (const id in sigs) if (!(id in want)) delete sigs[id];
+    saveMeta();
+  }
   const canon = d => JSON.stringify(merge(d, {tasks:[]}));
 
   function loadGis(){
@@ -972,19 +1022,20 @@ const Sync = (() => {
   async function connect(prompt){
     if (!clientId()){ $("syncIdWrap").open = true; $("syncClientId").focus(); toast("Paste your Google client ID first."); return; }
     try { await loadGis(); } catch(e){ err = e.message; state = "error"; return render(); }
-    tokenClient = google.accounts.oauth2.initTokenClient({client_id:clientId(), scope:SCOPE, callback: r => {
+    tokenClient = google.accounts.oauth2.initTokenClient({client_id:clientId(), scope:SCOPE + (meta.cal ? " " + CAL_SCOPE : ""), include_granted_scopes:true, callback: r => {
       if (r.error){ err = r.error_description || r.error; state = "error"; return render(); }
       token = r.access_token; exp = Date.now() + (r.expires_in - 60) * 1000;
-      try { localStorage.setItem(TOKEN_KEY, JSON.stringify({token, exp})); } catch(e){}
+      hasCal = google.accounts.oauth2.hasGrantedAllScopes(r, CAL_SCOPE); calErr = "";
+      try { localStorage.setItem(TOKEN_KEY, JSON.stringify({token, exp, cal:hasCal})); } catch(e){}
       meta.enabled = true; saveMeta(); state = "ok"; err = ""; run();
     }, error_callback: e => { err = e.message || e.type || "Sign-in was cancelled"; state = meta.enabled ? "reconnect" : "off"; render(); }});
     tokenClient.requestAccessToken({prompt});
   }
-  async function api(url, opts={}){
+  async function api(url, opts={}, allow=[]){
     if (!token || Date.now() > exp){ token = null; state = "reconnect"; throw new Error("expired"); }
     const r = await fetch(url, Object.assign({}, opts, {headers:Object.assign({Authorization:"Bearer "+token}, opts.headers || {})}));
     if (r.status === 401){ token = null; localStorage.removeItem(TOKEN_KEY); state = "reconnect"; throw new Error("expired"); }
-    if (!r.ok) throw new Error("Google Drive said: " + r.status + " " + (await r.text()).slice(0,120));
+    if (!r.ok && !allow.includes(r.status)) throw Object.assign(new Error("Google said: " + r.status + " " + (await r.text()).slice(0,120)), {status:r.status});
     return r;
   }
   async function findFile(){
@@ -1018,11 +1069,14 @@ const Sync = (() => {
       }
       if (!remote || canon(remote) !== JSON.stringify(merged)) await upload(merged);
       meta.last = Date.now(); saveMeta(); state = "ok"; err = "";
+      try { await calSync(); calErr = ""; }
+      catch(e){ if (state === "reconnect") throw e; calErr = e.status === 403 ? "Google Calendar access isn't allowed yet." : e.message; if (e.status === 403) hasCal = false; }
     } catch(e){
       if (state !== "reconnect"){ state = "ok"; err = e.message; }
     }
     busy = false; renderStatus();
     if (again){ again = false; schedule(); }
+    renderStatus();
   }
   function schedule(){ if (state !== "ok" && state !== "syncing") return; clearTimeout(timer); timer = setTimeout(run, 1500); }
   function off(){
@@ -1040,6 +1094,11 @@ const Sync = (() => {
     else if (state === "syncing") line = `<span class="dot on"></span>Syncing...`;
     else if (state === "error") line = `<span class="dot warn"></span>Sync problem: ${esc(err)}`;
     else if (state === "ok") line = err ? `<span class="dot warn"></span>Sync problem: ${esc(err)}` : `<span class="dot on"></span>Synced ${meta.last ? ago(meta.last) : ""}`;
+    const calNeeds = meta.enabled && meta.cal && (state === "ok" || state === "syncing") && !hasCal;
+    if (calNeeds) notice = `<span>Allow Google Calendar so your phone alerts you even when this app is closed.</span><button class="btn primary" data-s="calallow">Allow</button>`;
+    $("calSyncOn").checked = !!meta.cal;
+    $("calStatus").textContent = !meta.cal ? "" : !meta.enabled ? "Starts when you sign in." : calErr ? "Calendar problem: " + calErr
+      : calNeeds ? "Needs your OK: tap Allow above." : db.calId ? "On. Alerts come from the Daily Tasks calendar on your phone." : "Setting up...";
     $("syncFoot").innerHTML = state === "local" ? "" : line;
     $("syncStatus").innerHTML = line;
     $("syncNotice").innerHTML = notice; $("syncNotice").classList.toggle("hidden", !notice);
@@ -1051,15 +1110,20 @@ const Sync = (() => {
     $("syncOff").classList.toggle("hidden", !meta.enabled);
     if (document.activeElement !== $("syncClientId")) $("syncClientId").value = db.settings.googleClientId || DEFAULT_CLIENT_ID;
   }
-  document.addEventListener("click", e => { const b = e.target.closest("[data-s=reconnect]"); if (b) connect(""); });
+  document.addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (b) connect(b.dataset.s === "calallow" ? "consent" : ""); });
+  $("calSyncOn").onchange = e => {
+    meta.cal = e.target.checked; saveMeta();
+    if (meta.cal && meta.enabled && !hasCal) connect("consent"); else { renderStatus(); run(); }
+  };
   $("syncConnect").onclick = () => connect(meta.enabled ? "" : "consent");
   $("syncNow").onclick = () => { if (state === "ok") run(); else connect(""); };
   $("syncOff").onclick = () => { if (confirm("Stop syncing this device? Your tasks stay here and in Google Drive.")) off(); };
   $("syncSaveId").onclick = () => { db.settings.googleClientId = $("syncClientId").value.trim(); save(); toast("Client ID saved"); };
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") run(); });
   setInterval(() => { if (document.visibilityState === "visible") run(); }, 60000);
-  return {schedule, run, renderStatus, merge, init: () => { renderStatus(); if (state === "ok") run(); },
-    _test: (tok, cid) => { token = tok; exp = Date.now() + 3600e3; meta.enabled = true; state = "ok"; return run(); }};
+  const calOn = () => !!(meta.enabled && meta.cal && hasCal && db.calId);
+  return {schedule, run, renderStatus, merge, calOn, eventFor, init: () => { renderStatus(); if (state === "ok") run(); },
+    _test: (tok, cal) => { token = tok; exp = Date.now() + 3600e3; hasCal = cal !== false; meta.enabled = true; state = "ok"; return run(); }};
 })();
 
 // ---------- reminders ----------
@@ -1080,7 +1144,7 @@ document.addEventListener("click", () => { try { audioCtx = audioCtx || new (win
 let titleFlash;
 function alertUser(title, body, task){
   beep();
-  if ("Notification" in window && Notification.permission === "granted"){
+  if ("Notification" in window && Notification.permission === "granted" && !(task && Sync.calOn() && task.time)){
     const opts = {body, requireInteraction:true, tag: task ? task.id : "info", icon:"icon-192.png"};
     if (swReg) swReg.showNotification(title, opts).catch(() => {});
     else try { const n = new Notification(title, opts); n.onclick = () => { window.focus(); n.close(); }; } catch(e){}
