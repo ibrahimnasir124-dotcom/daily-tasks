@@ -217,16 +217,48 @@ aside nav .ico .pdot{width:10px;height:10px}
 
 @media (max-width:900px){ .drawer{position:fixed;right:0;top:0;z-index:20;width:min(400px,100vw)} main{padding:24px 24px 90px} }
 @media (hover:none){ .desk-only{display:none} .handle{display:none} .acts{opacity:1} }
+#mbar,#scrim{display:none}
 @media (max-width:640px){
-  .drawer{width:100vw}
-  body{flex-direction:column} aside{width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line)}
-  .brand{padding:4px} aside h1,aside .date,.side-add,.side-label,.cal-btn .lbl{display:none}
-  #projNav,.side-label.with-btn{display:none!important}
-  aside nav{display:flex;flex-wrap:wrap;margin:0} aside nav button{width:auto;padding:8px 10px} aside nav .lbl{display:none}
-  .cal-btn{width:auto;padding:8px 10px}
-  .side-foot{display:none} .wrap{height:auto} main{padding:14px 16px 90px}
-  .page-head h2{font-size:22px}
-  #fab{display:grid;position:fixed;right:20px;bottom:24px;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:30px;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:15;cursor:pointer}
+  /* phone: bigger text, top bar with a menu button, sidebar slides out from the left */
+  body{flex-direction:column;font-size:16px}
+  #mbar{display:flex;align-items:center;gap:6px;position:sticky;top:0;z-index:12;background:var(--bg);padding:8px 10px;border-bottom:1px solid var(--line);min-height:56px}
+  #menuBtn{background:none;border:0;padding:10px;border-radius:8px;cursor:pointer;color:var(--text);display:grid;place-items:center}
+  #menuBtn:active{background:var(--hover)}
+  #menuBtn svg{width:26px;height:26px}
+  #mTitle{font-size:19px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  aside{position:fixed;left:0;top:0;bottom:0;z-index:30;width:min(86vw,330px);height:100%;transform:translateX(-102%);transition:transform .22s ease,visibility 0s .22s;visibility:hidden;padding:14px 12px calc(14px + env(safe-area-inset-bottom))}
+  body.menu-open aside{transform:none;visibility:visible;transition:transform .22s ease;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+  .log-box .sec-head{flex-wrap:wrap;row-gap:2px} .log-box .sec-head .sub{flex-basis:100%}
+  #scrim{display:block;position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .22s}
+  body.menu-open #scrim{opacity:1;pointer-events:auto}
+  aside h1{font-size:18px} aside .date{font-size:14px;margin-left:44px}
+  .brand .logo{width:30px;height:30px;font-size:17px}
+  .side-add,aside nav button,.cal-btn{font-size:16.5px;padding:12px 10px;gap:14px}
+  .side-add .pc{width:26px;height:26px}
+  aside nav .ico svg{width:24px;height:24px} aside nav .badge{font-size:14px}
+  .side-label{font-size:14px;margin:18px 10px 6px} .side-label .mini{font-size:24px;padding:2px 10px}
+  .side-foot{font-size:13.5px} .side-foot button{font-size:13.5px}
+  .wrap{height:auto} main{padding:14px 16px 100px;overflow:visible}
+  .drawer{width:100vw;font-size:16px} .drawer label{font-size:14px} .drawer .title-in{font-size:21px}
+  input,select,textarea{font-size:16px;padding:10px 11px}
+  .page-head h2{font-size:26px} .page-sub{font-size:15px}
+  .sec-head{font-size:16px}
+  .task{padding:12px 0 11px;gap:6px}
+  .task .title{font-size:17px}
+  .meta{font-size:14px;gap:4px 14px;margin-top:5px}
+  .chip svg{width:14px;height:14px}
+  .notes{font-size:15px}
+  .check{width:22px;height:22px;font-size:12px;margin:1px 10px 0 0}
+  .acts svg{width:21px;height:21px} .acts button{padding:5px 7px}
+  .subt{font-size:16px;padding:9px 0} .subt .check{width:20px;height:20px;font-size:11px}
+  .add-row{font-size:16.5px;padding:12px 0} .add-row .pl{width:22px;height:22px;font-size:24px}
+  .add-form #quick{font-size:17px} .add-form #quickDesc{font-size:15px}
+  .btn{font-size:15px;padding:10px 14px}
+  .notice{font-size:15px}
+  details.completed summary{font-size:15px}
+  .hint{font-size:14px}
+  .toast{font-size:15px}
+  #fab{display:grid;position:fixed;right:20px;bottom:calc(24px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:32px;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:15;cursor:pointer}
 }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
@@ -235,6 +267,8 @@ aside nav .ico .pdot{width:10px;height:10px}
 <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
+<header id="mbar"><button id="menuBtn" title="Menu" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span id="mTitle">Today</span></header>
+<div id="scrim"></div>
 <aside>
   <div class="brand"><span class="logo">✓</span><h1>Daily Tasks</h1></div>
   <div class="date" id="todayLabel"></div>
@@ -683,6 +717,8 @@ function render(){
   if (view === "project" && !projById(curProj)) view = "projects";
   for (const s of document.querySelectorAll("main section")) s.classList.toggle("hidden", s.id !== "view-"+view);
   for (const b of document.querySelectorAll("#nav button")) b.classList.toggle("on", b.dataset.view === view || (view === "project" && b.dataset.view === "projects"));
+  const vt = {today:"Today", upcoming:"Upcoming", all:"All tasks", projects:"My projects", history:"History", settings:"Settings & backup"};
+  $("mTitle").textContent = view === "project" ? (projById(curProj) || {}).name || "" : vt[view] || "";
   const openCount = p => db.tasks.filter(t => t.project === p.id && (t.repeat !== "none" || !t.done)).length;
   $("projNav").innerHTML = projsSorted().map(p => `<button data-proj="${p.id}" class="${view === "project" && curProj === p.id ? "on" : ""}"><span class="ico"><span class="pdot" style="background:${p.color}"></span></span><span class="lbl">${esc(p.name)}</span><span class="badge">${openCount(p) || ""}</span></button>`).join("");
   // the add-task form follows you into a project page
@@ -861,6 +897,14 @@ function clearNotified(id){ for (const k in db.notified) if (k.startsWith(id+"|"
 
 // ---------- events ----------
 $("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b){ view = b.dataset.view; render(); } });
+// phone menu: slides out from the left, closes when you pick something
+const closeMenu = () => document.body.classList.remove("menu-open");
+$("menuBtn").onclick = () => document.body.classList.add("menu-open");
+$("scrim").onclick = closeMenu;
+document.querySelector("aside").addEventListener("click", e => { if (e.target.closest("button")) closeMenu(); });
+{ let x0 = null; const a = document.querySelector("aside");
+  a.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive:true});
+  a.addEventListener("touchend", e => { if (x0 != null && x0 - e.changedTouches[0].clientX > 60) closeMenu(); x0 = null; }); }
 function openProject(id){ curProj = id; view = "project"; render(); }
 $("projNav").addEventListener("click", e => { const b = e.target.closest("[data-proj]"); if (b) openProject(b.dataset.proj); });
 $("projList").addEventListener("click", e => { const b = e.target.closest("[data-proj]"); if (b) openProject(b.dataset.proj); });
