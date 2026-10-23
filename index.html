@@ -62,6 +62,12 @@ aside nav button.drop-hover{outline:2px dashed var(--accent)}
 .sync-btn.spin svg{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .sync-btn:not(.hidden)+.side-foot{margin-top:0}
+/* status messages (backup, sync, notifications) live in the sidebar, never on the main screen */
+.side-bottom{margin-top:auto;padding-top:12px}
+.side-bottom .sync-btn,.side-bottom .side-foot{margin-top:0}
+#sideAlerts .notice{flex-direction:column;align-items:stretch;gap:8px;font-size:12.5px;padding:10px 12px;margin:0 0 10px;border-radius:8px}
+#sideAlerts .notice .btn{align-self:flex-start;font-size:12.5px;padding:6px 11px}
+#sideAlerts .notice .btn.ghost{margin-top:-4px;padding-left:0;background:none}
 #menuBtn{position:relative}
 #menuBtn.needs::after{content:"";position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--warn);border:2px solid var(--bg)}
 .side-foot{margin-top:auto;padding:10px 8px 4px;font-size:12px;color:var(--muted)}
@@ -253,7 +259,7 @@ aside nav .ico .pdot{width:10px;height:10px}
   .side-add .pc{width:26px;height:26px}
   aside nav .ico svg{width:24px;height:24px} aside nav .badge{font-size:14px}
   .side-label{font-size:14px;margin:18px 10px 6px} .side-label .mini{font-size:24px;padding:2px 10px}
-  .side-foot{font-size:13.5px} .sync-btn{font-size:16.5px;padding:12px 10px;gap:14px} .sync-btn svg{width:24px;height:24px} .sync-btn small{font-size:13.5px} .side-foot button{font-size:13.5px}
+  .side-foot{font-size:13.5px} #sideAlerts .notice{font-size:15px;padding:12px 14px} #sideAlerts .notice .btn{font-size:15px;padding:9px 14px} .sync-btn{font-size:16.5px;padding:12px 10px;gap:14px} .sync-btn svg{width:24px;height:24px} .sync-btn small{font-size:13.5px} .side-foot button{font-size:13.5px}
   .wrap{height:auto} main{padding:14px 16px 100px;overflow:visible}
   .drawer{width:100vw;font-size:16px} .drawer label{font-size:14px} .drawer .title-in{font-size:21px}
   input,select,textarea{font-size:16px;padding:10px 11px}
@@ -301,19 +307,23 @@ aside nav .ico .pdot{width:10px;height:10px}
   <nav id="projNav"></nav>
   <div class="side-label">Calendar</div>
   <button class="cal-btn" id="calExport" title="Download your timed tasks as a calendar file"><span class="ico" style="width:22px;display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><span class="lbl">Send to phone calendar</span></button>
+  <div class="side-bottom">
+  <div id="sideAlerts">
+    <div class="notice hidden" id="notifNotice">
+      <span>Turn on desktop notifications so reminders pop up even when this window is in the background.</span>
+      <button class="btn primary" id="enableNotif">Turn on</button>
+    </div>
+    <div class="notice hidden" id="syncNotice"></div>
+    <div class="notice hidden" id="backupNotice"></div>
+  </div>
   <button class="sync-btn hidden" id="syncBtn"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9M19.5 4.5V9H15M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15M4.5 19.5V15H9"/></svg></span><span class="lbl">Sync now<small id="syncSub"></small></span><span class="sdot" id="syncDot"></span></button>
   <div class="side-foot"><div id="syncFoot" style="margin-bottom:6px"></div><div id="backupFoot"></div></div>
+  </div>
 </aside>
 
 <div class="wrap">
 <main>
  <div class="col">
-  <div class="notice hidden" id="notifNotice">
-    <span>Turn on desktop notifications so reminders pop up even when this window is in the background.</span>
-    <button class="btn primary" id="enableNotif">Turn on</button>
-  </div>
-  <div class="notice hidden" id="syncNotice"></div>
-  <div class="notice hidden" id="backupNotice"></div>
 
   <!-- TODAY -->
   <section id="view-today">
@@ -914,6 +924,11 @@ function clearNotified(id){ for (const k in db.notified) if (k.startsWith(id+"|"
 
 // ---------- events ----------
 $("nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b){ view = b.dataset.view; render(); } });
+// orange dot on the phone's menu button when something in the menu needs a tap
+function menuDot(){
+  const sb = $("syncBtn");
+  $("menuBtn").classList.toggle("needs", !!document.querySelector("#sideAlerts .notice:not(.hidden)") || (!sb.classList.contains("hidden") && sb.classList.contains("paused")));
+}
 // phone menu: slides out from the left, closes when you pick something
 const closeMenu = () => document.body.classList.remove("menu-open");
 $("menuBtn").onclick = () => document.body.classList.add("menu-open");
@@ -1285,7 +1300,7 @@ const Backup = (() => {
     else line = `<span class="dot on"></span>Backed up to "${name}" ${last ? ago(last) : ""}`;
     foot.innerHTML = line + (state === "paused" ? ` <button data-b="resume">Resume</button>` : state === "off" ? ` <button data-b="pick">Set up</button>` : "");
     st.innerHTML = line;
-    notice.innerHTML = noticeHtml; notice.classList.toggle("hidden", !noticeHtml || view === "settings");
+    notice.innerHTML = noticeHtml; notice.classList.toggle("hidden", !noticeHtml || view === "settings"); menuDot();
     $("backupBtns").classList.toggle("hidden", state === "unsupported");
     $("pickFolder").textContent = dir ? "Change folder" : "Choose backup folder";
     $("backupNow").classList.toggle("hidden", !dir);
@@ -1487,7 +1502,7 @@ const Sync = (() => {
     else if (meta.enabled && meta.cal && hasCal && calErr) notice = `<span>Calendar alerts: ${esc(calErr)}</span><button class="btn" data-s="retry">Try again</button>`;
     $("calSyncOn").checked = !!meta.cal;
     $("calStatus").textContent = !meta.cal ? "" : !meta.enabled ? "Starts when you sign in." : calErr ? "Calendar problem: " + calErr
-      : calNeeds ? "Needs your OK: tap Allow above." : db.calId ? "On. Alerts come from the Daily Tasks calendar on your phone." : "Setting up...";
+      : calNeeds ? "Needs your OK: tap Allow in the menu." : db.calId ? "On. Alerts come from the Daily Tasks calendar on your phone." : "Setting up...";
     // "Sync now" lives in the sidebar (the phone's slide-out menu); a dot on the menu button says when it needs a tap
     const showBtn = meta.enabled && state !== "local" && state !== "off";
     $("syncBtn").classList.toggle("hidden", !showBtn);
@@ -1495,7 +1510,7 @@ const Sync = (() => {
     $("syncBtn").classList.toggle("spin", state === "syncing");
     $("syncSub").textContent = state === "reconnect" ? "Paused, tap to carry on" : state === "syncing" ? "Syncing..." : state === "error" ? "Problem, tap to retry"
       : err ? "Problem, tap to retry" : meta.last ? "Synced " + ago(meta.last) : "";
-    $("menuBtn").classList.toggle("needs", showBtn && (state === "reconnect" || state === "error"));
+    menuDot();
     $("syncFoot").innerHTML = state === "local" || showBtn ? "" : line;
     $("syncStatus").innerHTML = line;
     $("syncNotice").innerHTML = notice; $("syncNotice").classList.toggle("hidden", !notice);
