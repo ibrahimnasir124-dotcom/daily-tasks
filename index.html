@@ -17,9 +17,13 @@
     --accent:#de4c4a; --accent-dark:#c43d3b; --accent-soft:#3b2a28; --danger:#ff7066; --ok:#25b84c; --warn:#ff9a14; --week:#a970ff;
     --p1:#ff7066; --p2:#ff9a14; --p3:#5297ff; --p4:#8f8f8f; --shadow:0 1px 8px rgba(0,0,0,.4); }
 }
+/* Nunito (SIL Open Font License), kept next to the app so it works offline */
+@font-face{font-family:"Nunito";font-style:normal;font-weight:400 800;font-display:swap;
+  src:url(nunito.woff2) format("woff2"),url(https://fonts.gstatic.com/s/nunito/v32/XRXV3I6Li01BKofINeaB.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;display:flex;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--text);font:14.5px/1.45 "Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;display:flex;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit}
 input,select,textarea{font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line2);border-radius:6px;padding:7px 9px;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--muted)}
@@ -48,6 +52,18 @@ aside nav button.drop-hover{outline:2px dashed var(--accent)}
 .side-label{font-size:12px;font-weight:600;color:var(--muted);margin:16px 8px 4px}
 .cal-btn{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:7px 8px;border-radius:6px;cursor:pointer;text-align:left;color:var(--text)}
 .cal-btn:hover{background:var(--hover)}
+.sync-btn{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:7px 8px;border-radius:6px;cursor:pointer;text-align:left;color:var(--text);margin-top:auto}
+.sync-btn:hover{background:var(--hover)}
+.sync-btn .ico{width:22px;display:grid;place-items:center;flex:none} .sync-btn svg{width:20px;height:20px}
+.sync-btn .lbl{display:flex;flex-direction:column;line-height:1.25}
+.sync-btn small{color:var(--muted);font-size:12px;font-weight:400}
+.sync-btn .sdot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.sync-btn.paused{color:var(--accent-dark)} .sync-btn.paused .sdot{background:var(--warn)}
+.sync-btn.spin svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-btn:not(.hidden)+.side-foot{margin-top:0}
+#menuBtn{position:relative}
+#menuBtn.needs::after{content:"";position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--warn);border:2px solid var(--bg)}
 .side-foot{margin-top:auto;padding:10px 8px 4px;font-size:12px;color:var(--muted)}
 .side-foot button{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-size:12px;text-decoration:underline}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--muted);vertical-align:1px}
@@ -237,7 +253,7 @@ aside nav .ico .pdot{width:10px;height:10px}
   .side-add .pc{width:26px;height:26px}
   aside nav .ico svg{width:24px;height:24px} aside nav .badge{font-size:14px}
   .side-label{font-size:14px;margin:18px 10px 6px} .side-label .mini{font-size:24px;padding:2px 10px}
-  .side-foot{font-size:13.5px} .side-foot button{font-size:13.5px}
+  .side-foot{font-size:13.5px} .sync-btn{font-size:16.5px;padding:12px 10px;gap:14px} .sync-btn svg{width:24px;height:24px} .sync-btn small{font-size:13.5px} .side-foot button{font-size:13.5px}
   .wrap{height:auto} main{padding:14px 16px 100px;overflow:visible}
   .drawer{width:100vw;font-size:16px} .drawer label{font-size:14px} .drawer .title-in{font-size:21px}
   input,select,textarea{font-size:16px;padding:10px 11px}
@@ -285,6 +301,7 @@ aside nav .ico .pdot{width:10px;height:10px}
   <nav id="projNav"></nav>
   <div class="side-label">Calendar</div>
   <button class="cal-btn" id="calExport" title="Download your timed tasks as a calendar file"><span class="ico" style="width:22px;display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><span class="lbl">Send to phone calendar</span></button>
+  <button class="sync-btn hidden" id="syncBtn"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9M19.5 4.5V9H15M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15M4.5 19.5V15H9"/></svg></span><span class="lbl">Sync now<small id="syncSub"></small></span><span class="sdot" id="syncDot"></span></button>
   <div class="side-foot"><div id="syncFoot" style="margin-bottom:6px"></div><div id="backupFoot"></div></div>
 </aside>
 
@@ -1461,8 +1478,7 @@ const Sync = (() => {
     if (!$("syncFoot")) return;
     let line = "", notice = "";
     if (state === "off") line = `<span class="dot warn"></span>Sync is off`;
-    else if (state === "reconnect"){ line = `<span class="dot warn"></span>Sync paused`;
-      notice = `<span>Tap to sync your tasks with your other devices.</span><button class="btn primary" data-s="reconnect">Sync now</button>`; }
+    else if (state === "reconnect") line = `<span class="dot warn"></span>Sync paused`;
     else if (state === "syncing") line = `<span class="dot on"></span>Syncing...`;
     else if (state === "error") line = `<span class="dot warn"></span>Sync problem: ${esc(err)}`;
     else if (state === "ok") line = err ? `<span class="dot warn"></span>Sync problem: ${esc(err)}` : `<span class="dot on"></span>Synced ${meta.last ? ago(meta.last) : ""}`;
@@ -1472,7 +1488,15 @@ const Sync = (() => {
     $("calSyncOn").checked = !!meta.cal;
     $("calStatus").textContent = !meta.cal ? "" : !meta.enabled ? "Starts when you sign in." : calErr ? "Calendar problem: " + calErr
       : calNeeds ? "Needs your OK: tap Allow above." : db.calId ? "On. Alerts come from the Daily Tasks calendar on your phone." : "Setting up...";
-    $("syncFoot").innerHTML = state === "local" ? "" : line;
+    // "Sync now" lives in the sidebar (the phone's slide-out menu); a dot on the menu button says when it needs a tap
+    const showBtn = meta.enabled && state !== "local" && state !== "off";
+    $("syncBtn").classList.toggle("hidden", !showBtn);
+    $("syncBtn").classList.toggle("paused", state === "reconnect" || state === "error");
+    $("syncBtn").classList.toggle("spin", state === "syncing");
+    $("syncSub").textContent = state === "reconnect" ? "Paused, tap to carry on" : state === "syncing" ? "Syncing..." : state === "error" ? "Problem, tap to retry"
+      : err ? "Problem, tap to retry" : meta.last ? "Synced " + ago(meta.last) : "";
+    $("menuBtn").classList.toggle("needs", showBtn && (state === "reconnect" || state === "error"));
+    $("syncFoot").innerHTML = state === "local" || showBtn ? "" : line;
     $("syncStatus").innerHTML = line;
     $("syncNotice").innerHTML = notice; $("syncNotice").classList.toggle("hidden", !notice);
     $("syncHosted").classList.toggle("hidden", state === "local");
@@ -1491,6 +1515,7 @@ const Sync = (() => {
   };
   $("syncConnect").onclick = () => connect(meta.enabled ? "" : "consent");
   $("syncNow").onclick = () => { if (state === "ok") run(); else connect(""); };
+  $("syncBtn").onclick = () => { if (state === "ok" || state === "syncing"){ err = ""; run(); } else connect(""); };
   $("syncOff").onclick = () => { if (confirm("Stop syncing this device? Your tasks stay here and in Google Drive.")) off(); };
   $("syncSaveId").onclick = () => { db.settings.googleClientId = $("syncClientId").value.trim(); save(); toast("Client ID saved"); };
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") run(); });
