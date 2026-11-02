@@ -199,6 +199,29 @@ th{color:var(--muted);font-weight:600;border-top:0}
 .setrow select,.setrow input[type=time]{width:auto}
 kbd{border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px}
 .log-box{margin-top:30px}
+/* My Day: greeting, progress ring, streak, weekly recap */
+.hero{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,var(--accent-soft),color-mix(in srgb,var(--accent-soft) 35%,var(--bg)));border-radius:14px;padding:16px 18px;margin:6px 0 14px}
+.hero-txt{flex:1;min-width:0}
+.hello{font-size:18px;font-weight:800;letter-spacing:-.1px}
+.plan{font-size:13.5px;margin-top:3px;color:color-mix(in srgb,var(--text) 78%,transparent)}
+.plan b{font-weight:700;color:var(--text)}
+.streak{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:12.5px;font-weight:700;color:var(--warn);background:var(--bg);border-radius:999px;padding:3px 11px}
+.ring{position:relative;width:64px;height:64px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.ring .trk{stroke:color-mix(in srgb,var(--accent) 16%,transparent)}
+.ring .val{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:169.65;stroke-dashoffset:169.65;transition:stroke-dashoffset .6s ease,stroke .3s}
+.ring.full .val{stroke:var(--ok)}
+.ring .pct{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:14px}
+.week{margin-top:28px}
+.wbars{display:flex;gap:10px;align-items:flex-end;height:104px;padding:12px 2px 0}
+.wbar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font-size:11.5px;color:var(--muted)}
+.wbar i{display:block;width:100%;max-width:34px;background:color-mix(in srgb,var(--accent) 30%,transparent);border-radius:6px 6px 2px 2px;min-height:4px;transition:height .5s ease}
+.wbar.now i{background:var(--accent)} .wbar.now{color:var(--text);font-weight:700}
+.wbar b{font-size:11px;font-weight:700;color:var(--text);min-height:14px}
+.wsum{font-size:13px;color:var(--muted);margin-top:10px}
+.wsum b{color:var(--text)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
 .log-box textarea{min-height:110px;background:var(--side)}
 #fab{display:none}
 /* projects */
@@ -259,7 +282,7 @@ aside nav .ico .pdot{width:10px;height:10px}
   .side-add .pc{width:26px;height:26px}
   aside nav .ico svg{width:24px;height:24px} aside nav .badge{font-size:14px}
   .side-label{font-size:14px;margin:18px 10px 6px} .side-label .mini{font-size:24px;padding:2px 10px}
-  .side-foot{font-size:13.5px} #sideAlerts .notice{font-size:15px;padding:12px 14px} #sideAlerts .notice .btn{font-size:15px;padding:9px 14px} .sync-btn{font-size:16.5px;padding:12px 10px;gap:14px} .sync-btn svg{width:24px;height:24px} .sync-btn small{font-size:13.5px} .side-foot button{font-size:13.5px}
+  .side-foot{font-size:13.5px} .hero{padding:16px} .hello{font-size:20px} .plan{font-size:15.5px} .streak{font-size:14px} .ring{width:72px;height:72px} .ring .pct{font-size:16px} .wbar{font-size:13px} .wbar b{font-size:12.5px} .wsum{font-size:15px} #sideAlerts .notice{font-size:15px;padding:12px 14px} #sideAlerts .notice .btn{font-size:15px;padding:9px 14px} .sync-btn{font-size:16.5px;padding:12px 10px;gap:14px} .sync-btn svg{width:24px;height:24px} .sync-btn small{font-size:13.5px} .side-foot button{font-size:13.5px}
   .wrap{height:auto} main{padding:14px 16px 100px;overflow:visible}
   .drawer{width:100vw;font-size:16px} .drawer label{font-size:14px} .drawer .title-in{font-size:21px}
   input,select,textarea{font-size:16px;padding:10px 11px}
@@ -329,8 +352,10 @@ aside nav .ico .pdot{width:10px;height:10px}
   <section id="view-today">
     <div class="page-head"><h2>Today</h2><span class="spacer"></span>
       <div class="seg" id="sortSeg" title="How to order today's list"><button data-sort="mine">My order</button><button data-sort="time">By time</button></div></div>
-    <div class="page-sub" id="todayCount"></div>
-    <div class="progress"><div id="todayBar" style="width:0"></div></div>
+    <div class="hero" id="hero">
+      <div class="hero-txt"><div class="hello" id="hello"></div><div class="plan" id="todayCount"></div><div class="streak hidden" id="streak"></div></div>
+      <div class="ring" id="ring" title="Today's progress"><svg viewBox="0 0 64 64"><circle class="trk" cx="32" cy="32" r="27"/><circle class="val" id="ringVal" cx="32" cy="32" r="27"/></svg><div class="pct" id="ringPct"></div></div>
+    </div>
     <div id="overdueWrap" class="hidden">
       <div class="sec-head">Overdue<span class="spacer"></span><button class="link" id="rescheduleAll">Move to today</button></div>
       <div class="list" id="overdueList"></div>
@@ -355,6 +380,12 @@ aside nav .ico .pdot{width:10px;height:10px}
       <div class="sec-head" style="margin-bottom:10px">Daily log<span class="sub">notes, numbers, anything you track each day</span></div>
       <textarea id="dailyLog" placeholder="What happened today, figures to record, follow-ups..."></textarea>
       <div class="hint" id="logSaved">Saves automatically.</div>
+    </div>
+
+    <div class="week" id="weekBox">
+      <div class="sec-head">Your week<span class="sub" id="weekSub"></span></div>
+      <div class="wbars" id="weekBars"></div>
+      <div class="wsum" id="weekSum"></div>
     </div>
   </section>
 
@@ -436,6 +467,7 @@ aside nav .ico .pdot{width:10px;height:10px}
     </div>
     <div class="card">
       <div class="card-h"><h2>Reminders</h2></div>
+      <div class="setrow"><label for="setName">Your name, for the morning greeting</label><input id="setName" maxlength="40" autocomplete="off" style="max-width:220px"></div>
       <div class="setrow"><input type="checkbox" id="setSound"><label for="setSound">Play a sound with reminders</label></div>
       <div class="setrow"><label for="setDefaultRemind">Default reminder for tasks with a time</label><select id="setDefaultRemind"></select></div>
       <div class="setrow"><label for="setMorning">Morning summary at</label><input type="time" id="setMorning"><span class="hint" style="margin:0">(clear it for none)</span></div>
@@ -763,9 +795,7 @@ function render(){
     open.sort(db.settings.sort === "time" ? ((a,b) => byTime(a,b) || byOrder(a,b)) : byOrder);
     for (const b of document.querySelectorAll("#sortSeg button")) b.classList.toggle("on", b.dataset.sort === db.settings.sort);
     const overdue = open.filter(t => t.repeat === "none" && t.date < d), todays = open.filter(t => !overdue.includes(t));
-    $("todayCount").innerHTML = all.length ? `<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="6" r="5"/><path d="M3.8 6.1 5.3 7.5 8.3 4.6"/></svg> ${open.length} task${open.length===1?"":"s"}${done.length ? ` · ${done.length} done` : ""}` : "";
-    $("todayBar").style.width = all.length ? (100*done.length/all.length)+"%" : "0";
-    $("todayBar").parentNode.classList.toggle("hidden", !all.length);
+    renderMyDay(d, all, open, done);
     $("overdueWrap").classList.toggle("hidden", !overdue.length);
     $("overdueList").innerHTML = overdue.map(t => taskRow(t,d)).join("");
     $("todayHead").textContent = `${parseYmd(d).toLocaleDateString(undefined,{day:"numeric", month:"short"})} · Today · ${parseYmd(d).toLocaleDateString(undefined,{weekday:"long"})}`;
@@ -817,10 +847,64 @@ function render(){
     `<tr><td>${short(r.date)}</td><td>${r.done}/${r.total}</td><td>${esc(r.titles.join(", "))}</td><td style="white-space:pre-wrap">${esc(r.log)}</td></tr>`).join("") || `<tr><td colspan="4" class="empty">History builds up as you use the app.</td></tr>`;
   if (view === "settings"){
     $("setSound").checked = db.settings.sound;
+    if (document.activeElement !== $("setName")) $("setName").value = db.settings.name ?? "Ibrahim";
     $("setDefaultRemind").value = db.settings.defaultRemind;
     $("setMorning").value = db.settings.morning || "";
   }
   renderDrawer();
+}
+// ---------- My Day ----------
+const doneCount = d => db.tasks.filter(t => t.repeat === "none" ? (t.done && t.doneAt === d) : (t.doneDates && t.doneDates[d])).length;
+function streak(){
+  let d = today(), n = 0;
+  const gotToday = doneCount(d) > 0;
+  if (!gotToday) d = addDays(d, -1);
+  while (n < 400 && doneCount(d)){ n++; d = addDays(d, -1); }
+  return {n, gotToday};
+}
+function renderMyDay(d, all, open, done){
+  const h = new Date().getHours(), name = (db.settings.name ?? "Ibrahim").trim();
+  const part = h < 5 ? ["Up late", "🌙"] : h < 12 ? ["Good morning", "☀️"] : h < 17 ? ["Good afternoon", "🌤️"] : ["Good evening", "🌙"];
+  $("hello").textContent = `${part[0]}${name ? ", " + name : ""} ${part[1]}`;
+  const nowT = nowHM(), next = open.filter(t => t.time && t.time >= nowT).sort(byTime)[0];
+  $("todayCount").innerHTML = !all.length ? "Nothing planned yet. Add your first task below."
+    : !open.length ? "Everything's done for today. Well done! 🎉"
+    : `<b>${open.length}</b> to go${done.length ? `, <b>${done.length}</b> done` : ""}` + (next ? `. Next up: <b>${esc(next.title)}</b> at ${fmtTime(next.time)}` : "");
+  const p = all.length ? done.length / all.length : 0;
+  $("ring").classList.toggle("hidden", !all.length);
+  $("ring").classList.toggle("full", all.length > 0 && !open.length);
+  $("ringVal").style.strokeDashoffset = (169.65 * (1 - p)).toFixed(2);
+  $("ringPct").textContent = Math.round(p * 100) + "%";
+  const st = streak();
+  $("streak").classList.toggle("hidden", !st.n);
+  $("streak").textContent = st.n ? `🔥 ${st.n}-day streak` + (st.gotToday ? "" : ". Tick a task today to keep it going") : "";
+  // the last 7 days, with today on the right
+  const days = [...Array(7)].map((_, i) => addDays(d, i - 6)), counts = days.map(doneCount);
+  const prev = [...Array(7)].map((_, i) => doneCount(addDays(d, i - 13))).reduce((a, b) => a + b, 0);
+  const total = counts.reduce((a, b) => a + b, 0), max = Math.max(1, ...counts);
+  $("weekBars").innerHTML = days.map((x, i) => `<div class="wbar ${x === d ? "now" : ""}" title="${short(x)}: ${counts[i]} done"><b>${counts[i] || ""}</b><i style="height:${Math.round(70 * counts[i] / max)}%"></i>${parseYmd(x).toLocaleDateString(undefined, {weekday:"short"})}</div>`).join("");
+  $("weekSub").textContent = "tasks you finished, last 7 days";
+  const best = counts.indexOf(Math.max(...counts));
+  $("weekSum").innerHTML = !total ? "Your week fills in as you tick tasks off."
+    : `You finished <b>${total}</b> task${total === 1 ? "" : "s"} this week` + (prev ? (total > prev ? `, <b>${total - prev} more</b> than the week before 📈` : total < prev ? `, ${prev - total} fewer than the week before` : ", the same as the week before") : "")
+      + `. Best day: <b>${parseYmd(days[best]).toLocaleDateString(undefined, {weekday:"long"})}</b>.`;
+}
+// a short burst of confetti when the day's list is cleared
+function celebrate(){
+  toast("All done for today! 🎉", true);
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = document.createElement("canvas"); c.id = "confetti"; document.body.appendChild(c);
+  const ctx = c.getContext("2d"), W = c.width = innerWidth, H = c.height = innerHeight;
+  const cols = ["#dc4c3e","#ff9933","#fad000","#7ecc49","#14aaf5","#884dff","#e05194"];
+  const ps = [...Array(140)].map(() => ({x: W/2 + (Math.random()-.5)*W*.3, y: H*.35, vx: (Math.random()-.5)*14, vy: -Math.random()*14 - 4,
+    s: 5 + Math.random()*6, r: Math.random()*6, vr: (Math.random()-.5)*.4, c: cols[Math.floor(Math.random()*cols.length)]}));
+  const t0 = performance.now();
+  (function frame(t){
+    const k = (t - t0) / 2200; ctx.clearRect(0, 0, W, H);
+    for (const p of ps){ p.vy += .38; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - k); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s/2, -p.s/3, p.s, p.s*.66); ctx.restore(); }
+    if (k < 1) requestAnimationFrame(frame); else c.remove();
+  })(t0);
 }
 function historyRows(){
   let first = today();
@@ -1036,7 +1120,8 @@ document.querySelector("main").addEventListener("click", e => {
   if (e.target.closest(".check")){
     const wasDone = isDone(t,d);
     snapshot(); setDone(t,d,!wasDone); save();
-    if (!wasDone){ row.classList.add("completing"); setTimeout(render, 220); toast("Task completed", true); }
+    if (!wasDone){ row.classList.add("completing"); setTimeout(render, 220);
+      if (d === today() && !tasksFor(d).some(x => !isDone(x,d))) celebrate(); else toast("Task completed", true); }
     else render();
   }
   else if (e.target.closest("[data-act=del]")) deleteTask(t);
@@ -1051,6 +1136,7 @@ $("dailyLog").addEventListener("input", e => {
   }, 400);
 });
 $("enableNotif").onclick = () => Notification.requestPermission().then(render);
+$("setName").addEventListener("input", e => { db.settings.name = e.target.value; save(); });
 $("setSound").onchange = e => { db.settings.sound = e.target.checked; save(); };
 $("setDefaultRemind").onchange = e => { db.settings.defaultRemind = +e.target.value; save(); };
 $("setMorning").onchange = e => { db.settings.morning = e.target.value; save(); };
