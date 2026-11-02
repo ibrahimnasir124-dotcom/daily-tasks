@@ -1,6 +1,6 @@
 {
-  "name": "Daily Tasks",
-  "short_name": "Tasks",
+  "name": "TKK CENTRAL",
+  "short_name": "TKK Central",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

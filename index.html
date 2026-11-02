@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Daily Tasks</title>
+<title>TKK CENTRAL</title>
 <style>
 /* Todoist-inspired look */
 :root{
@@ -222,6 +222,50 @@ kbd{border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;padd
 .wsum{font-size:13px;color:var(--muted);margin-top:10px}
 .wsum b{color:var(--text)}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+/* employees */
+.monthbar{display:flex;align-items:center;gap:6px;margin:2px 0 14px}
+.monthbar .mlabel{font-size:15px;min-width:130px;text-align:center}
+.monthbar .icon-btn{font-size:20px;padding:2px 10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--side);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat .k{font-size:12px;color:var(--muted);font-weight:600}
+.stat .v{font-size:19px;font-weight:800;margin-top:2px;letter-spacing:-.2px}
+.stat.due .v{color:var(--accent-dark)} .stat.ok .v{color:var(--ok)}
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex:none}
+.avatar.big{width:46px;height:46px;font-size:18px;align-self:center}
+.ehead{display:flex;flex-direction:column;min-width:0} .ehead .sub{color:var(--muted);font-size:13px}
+.emp-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.emp-row:hover{background:var(--hover)}
+.emp-row .who{flex:1;min-width:0} .emp-row .n{font-weight:700} .emp-row .r{font-size:12.5px;color:var(--muted)}
+.emp-row .st{text-align:right;font-size:13px;font-weight:700;white-space:nowrap}
+.emp-row .st small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.st.due{color:var(--accent-dark)} .st.ok{color:var(--ok)}
+.ledger{background:var(--side);border:1px solid var(--line);border-radius:12px;padding:6px 16px;margin-bottom:12px}
+.ledger .ln{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ledger .ln:last-child{border-bottom:0}
+.ledger .ln span:last-child{font-weight:700;font-variant-numeric:tabular-nums}
+.ledger .tot{font-size:16px} .ledger .tot span{font-weight:800}
+.ledger .tot.due span:last-child{color:var(--accent-dark)} .ledger .tot.ok span:last-child{color:var(--ok)}
+.ebtns{margin-bottom:6px}
+.pay-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14px}
+.pay-row .who{flex:1;min-width:0} .pay-row .n{font-weight:600} .pay-row .r{font-size:12.5px;color:var(--muted)}
+.pay-row .amt{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pay-row .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:18px;padding:0 6px;opacity:.6}
+.pay-row .x:hover{opacity:1;color:var(--danger)}
+.kind{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-right:6px;vertical-align:1px}
+.kind.salary{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.kind.advance{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.kind.bonus{background:color-mix(in srgb,var(--week) 15%,transparent);color:var(--week)}
+.day-in{width:auto;padding:3px 8px;font-weight:600;margin-left:6px;font-size:13px}
+.chip.emp{gap:4px}
+dialog .form{display:flex;flex-direction:column}
+dialog .form label{font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+dialog .kinds{margin:6px 0 2px}
+dialog .kinds button{padding:6px 14px;font-size:13.5px}
+@media (max-width:640px){ .stats{grid-template-columns:repeat(2,1fr)} .stat .v{font-size:20px} .stat .k{font-size:13.5px}
+  .emp-row .n{font-size:17px} .emp-row .r,.pay-row .r{font-size:14px} .emp-row .st{font-size:15px} .emp-row .st small{font-size:13px}
+  .ledger .ln{font-size:16px} .ledger .tot{font-size:18px} .pay-row{font-size:16px} .monthbar .mlabel{font-size:17px}
+  dialog .form label{font-size:14px} dialog .kinds button{font-size:15px;padding:8px 14px} .ehead .sub{font-size:15px} }
 .log-box textarea{min-height:110px;background:var(--side)}
 #fab{display:none}
 /* projects */
@@ -315,7 +359,7 @@ aside nav .ico .pdot{width:10px;height:10px}
 <header id="mbar"><button id="menuBtn" title="Menu" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span id="mTitle">Today</span></header>
 <div id="scrim"></div>
 <aside>
-  <div class="brand"><span class="logo">✓</span><h1>Daily Tasks</h1></div>
+  <div class="brand"><span class="logo">✓</span><h1>TKK CENTRAL</h1></div>
   <div class="date" id="todayLabel"></div>
   <button class="side-add" id="sideAdd"><span class="pc">+</span>Add task</button>
   <nav id="nav">
@@ -323,6 +367,7 @@ aside nav .ico .pdot{width:10px;height:10px}
     <button data-view="upcoming" data-drop="tomorrow"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9h17M8 3v3M16 3v3"/><circle cx="8.5" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="15.5" cy="13" r=".9" fill="currentColor"/><circle cx="8.5" cy="16.5" r=".9" fill="currentColor"/><circle cx="12" cy="16.5" r=".9" fill="currentColor"/></svg></span><span class="lbl">Upcoming</span></button>
     <button data-view="all"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 13.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4.5M4 13.5 6.5 5h11l2.5 8.5M4 13.5h4.5a3.5 3.5 0 0 0 7 0H20"/></svg></span><span class="lbl">All tasks</span><span class="badge" id="badgeAll"></span></button>
     <button data-view="projects"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></svg></span><span class="lbl">Projects</span></button>
+    <button data-view="employees"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="16.8" cy="9.5" r="2.5"/><path d="M15.5 14.2a4.6 4.6 0 0 1 5 4.8"/></svg></span><span class="lbl">Employees</span><span class="badge" id="badgeEmp"></span></button>
     <button data-view="history"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span class="lbl">History</span></button>
     <button data-view="settings"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg></span><span class="lbl">Settings &amp; backup</span></button>
   </nav>
@@ -420,6 +465,34 @@ aside nav .ico .pdot{width:10px;height:10px}
     <details class="completed" id="pDoneWrap"><summary id="pDoneSum"></summary><div id="pDoneList"></div></details>
   </section>
 
+  <!-- EMPLOYEES -->
+  <section id="view-employees" class="hidden">
+    <div class="page-head"><h2>Employees</h2><span class="spacer"></span><button class="btn primary" id="empAdd">+ Add employee</button></div>
+    <div class="monthbar"><button class="icon-btn" data-m="-1" title="Previous month">‹</button><b class="mlabel"></b><button class="icon-btn" data-m="1" title="Next month">›</button></div>
+    <div class="stats" id="empStats"></div>
+    <div class="sec-head">Team<span class="sub" id="empTeamSub"></span></div>
+    <div id="empList"></div>
+    <div class="sec-head" style="margin-top:26px">Payments on<input type="date" id="payDay" class="day-in"><span class="spacer"></span><span class="sub" id="payDayTotal"></span></div>
+    <div id="payDayList"></div>
+    <div class="row" style="margin-top:14px"><button class="btn" id="payCsv">Export all payments (Excel)</button></div>
+  </section>
+
+  <!-- ONE EMPLOYEE -->
+  <section id="view-employee" class="hidden">
+    <div class="page-head"><span class="avatar big" id="eAv"></span><div class="ehead"><h2 id="eName"></h2><div class="sub" id="eSub"></div></div><span class="spacer"></span>
+      <button class="icon-btn" id="eEdit" title="Edit employee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 19.5h3.2L18.6 8.6a2.2 2.2 0 0 0-3.2-3.2L4.5 16.3z"/><path d="M14 7l3 3"/></svg></button><button class="icon-btn" id="eDel" title="Delete employee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v6M13.5 10.5v6"/></svg></button></div>
+    <div class="monthbar"><button class="icon-btn" data-m="-1" title="Previous month">‹</button><b class="mlabel"></b><button class="icon-btn" data-m="1" title="Next month">›</button></div>
+    <div class="ledger" id="eLedger"></div>
+    <div class="row ebtns"><button class="btn primary" data-pay="salary">Pay salary</button><button class="btn" data-pay="advance">Give advance</button><button class="btn" data-pay="bonus">Add bonus</button></div>
+    <div class="hint" id="eNext"></div>
+    <div class="sec-head" style="margin-top:24px">Tasks<span class="sub" id="eTaskSub"></span></div>
+    <div class="list" id="eTasks"></div>
+    <div class="add-slot" id="eAddSlot"></div>
+    <details class="completed" id="eDoneWrap"><summary id="eDoneSum"></summary><div id="eDoneList"></div></details>
+    <div class="sec-head" style="margin-top:24px">Payment history</div>
+    <div id="eHistory"></div>
+  </section>
+
   <!-- HISTORY -->
   <section id="view-history" class="hidden">
     <div class="page-head"><h2>History</h2></div><div class="page-sub">What you finished each day, with your daily log.</div>
@@ -504,6 +577,8 @@ aside nav .ico .pdot{width:10px;height:10px}
   <label>Sub-tasks <span id="dSubCount" style="font-weight:400"></span></label>
   <div class="subs-ed" id="dSubs"></div>
   <input id="dSubAdd" placeholder="+ Add sub-task" autocomplete="off">
+  <label for="dEmp">Assigned to</label>
+  <select id="dEmp"></select>
   <label for="dProj">Project</label>
   <select id="dProj"></select>
   <div class="two">
@@ -557,6 +632,31 @@ aside nav .ico .pdot{width:10px;height:10px}
   </div>
 </dialog>
 
+<dialog id="empDlg">
+  <h2 id="empDlgH">Add employee</h2>
+  <div class="form">
+    <label for="empName">Name</label><input id="empName" maxlength="60" autocomplete="off" placeholder="e.g. Ali Raza">
+    <label for="empRole">Job</label><input id="empRole" maxlength="60" autocomplete="off" placeholder="e.g. Cashier">
+    <div class="two"><div><label for="empSalary">Monthly salary (Rs)</label><input id="empSalary" type="number" inputmode="numeric" min="0" step="1" placeholder="25000"></div>
+    <div><label for="empPhone">Phone</label><input id="empPhone" type="tel" maxlength="20" autocomplete="off" placeholder="03xx xxxxxxx"></div></div>
+  </div>
+  <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" id="empCancel">Cancel</button><button class="btn primary" id="empSave">Add</button></div>
+</dialog>
+
+<dialog id="payDlg">
+  <h2 id="payDlgH">Payment</h2>
+  <div class="seg kinds" id="payKind"><button data-k="salary">Salary</button><button data-k="advance">Advance</button><button data-k="bonus">Bonus</button></div>
+  <div class="hint" id="payKindHint"></div>
+  <div class="form">
+    <label for="payEmp">Employee</label><select id="payEmp"></select>
+    <div class="two"><div><label for="payAmt">Amount (Rs)</label><input id="payAmt" type="number" inputmode="numeric" min="0" step="1"></div>
+    <div><label for="payDate">Date paid</label><input id="payDate" type="date"></div></div>
+    <label for="payMonth" id="payMonthL">Counts toward salary of</label><input id="payMonth" type="month">
+    <label for="payNote">Note</label><input id="payNote" maxlength="120" autocomplete="off" placeholder="Optional">
+  </div>
+  <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" id="payCancel">Cancel</button><button class="btn primary" id="paySave">Save</button></div>
+</dialog>
+
 <div id="banner"></div>
 <div id="toasts"></div>
 
@@ -574,11 +674,11 @@ const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const REMIND_OPTS = [[-1,"No reminder"],[0,"At the time"],[5,"5 min before"],[10,"10 min before"],[15,"15 min before"],[30,"30 min before"],[60,"1 hour before"]];
 
 // ---------- storage ----------
-function blank(){ return {tasks:[], projects:[], logs:{}, notified:{}, snoozes:{}, settings:{sound:true, defaultRemind:0, morning:"09:00", sort:"mine", backupNoticeHidden:false}}; }
+function blank(){ return {tasks:[], projects:[], employees:[], payments:[], logs:{}, notified:{}, snoozes:{}, settings:{sound:true, defaultRemind:0, morning:"09:00", sort:"mine", backupNoticeHidden:false}}; }
 function load(obj){
   const d = Object.assign(blank(), obj || {});
   d.settings = Object.assign(blank().settings, d.settings || {});
-  if (!Array.isArray(d.projects)) d.projects = [];
+  for (const k of ["projects", "employees", "payments"]) if (!Array.isArray(d[k])) d[k] = [];
   d.tasks.forEach((t,i) => { if (t.order == null) t.order = i; });
   return d;
 }
@@ -590,12 +690,12 @@ const taskSig = t => { const {updatedAt, ...rest} = t; return JSON.stringify(res
 function markKnown(){
   db.deleted = db.deleted || {}; db.logStamps = db.logStamps || {};
   known = {tasks:{}, logs:Object.assign({}, db.logs)};
-  for (const t of [...db.tasks, ...db.projects]){ if (!t.updatedAt) t.updatedAt = t.createdAt || 1; known.tasks[t.id] = taskSig(t); }
+  for (const t of [...db.tasks, ...db.projects, ...db.employees, ...db.payments]){ if (!t.updatedAt) t.updatedAt = t.createdAt || 1; known.tasks[t.id] = taskSig(t); }
 }
 function stamp(){
   if (!known) return markKnown();
   const now = Date.now(), seen = {};
-  for (const t of [...db.tasks, ...db.projects]){
+  for (const t of [...db.tasks, ...db.projects, ...db.employees, ...db.payments]){
     const sig = taskSig(t); seen[t.id] = 1;
     if (known.tasks[t.id] !== sig){ t.updatedAt = now; delete db.deleted[t.id]; }
   }
@@ -684,11 +784,31 @@ const findProj = name => db.projects.find(p => projKey(p.name) === projKey(name)
 const subDone = (t, s, d) => t.repeat === "none" ? !!s.done : s.done === d;
 const subStats = (t, d) => { const l = t.subs || []; return {n:l.length, done:l.filter(s => subDone(t,s,d)).length}; };
 const expanded = new Set();
+// employees and payments; ids start with "e_" and "m_"
+const empById = id => id && db.employees.find(e => e.id === id);
+const empOf = t => empById(t.emp);
+const empsSorted = () => db.employees.slice().sort((a,b) => a.name.localeCompare(b.name));
+const findEmp = name => { const k = projKey(name); return db.employees.find(e => projKey(e.name) === k) || db.employees.find(e => projKey(e.name.split(/\s+/)[0]) === k); };
+const money = n => "Rs " + Math.round(n || 0).toLocaleString("en-PK");
+const thisMonth = () => today().slice(0,7);
+const addMonths = (m, n) => { const [y,mo] = m.split("-").map(Number); const d = new Date(y, mo-1+n, 1); return d.getFullYear()+"-"+pad(d.getMonth()+1); };
+const monthName = (m, long) => { const [y,mo] = m.split("-").map(Number); return new Date(y, mo-1, 1).toLocaleDateString(undefined, {month: long ? "long" : "short", year:"numeric"}); };
+const ACOLORS = ["#db4035","#ff9933","#299438","#158fad","#4073ff","#884dff","#e05194","#af38eb","#14aaf5","#7ecc49"];
+const avColor = e => ACOLORS[[...e.id].reduce((a,c) => a + c.charCodeAt(0), 0) % ACOLORS.length];
+const initials = n => n.trim().split(/\s+/).slice(0,2).map(w => w[0]).join("").toUpperCase();
+const avatar = (e, cls="") => `<span class="avatar ${cls}" style="background:${avColor(e)}">${esc(initials(e.name) || "?")}</span>`;
+const KIND = {salary:"Salary", advance:"Advance", bonus:"Bonus"};
+// one month for one employee: salary + bonus - advances taken against it - salary already paid
+function ledger(e, m){
+  const ps = db.payments.filter(p => p.emp === e.id && p.month === m), sum = k => ps.filter(p => p.kind === k).reduce((a,p) => a + (+p.amount || 0), 0);
+  const adv = sum("advance"), paid = sum("salary"), bonus = sum("bonus"), salary = +e.salary || 0;
+  return {salary, adv, paid, bonus, due: salary + bonus - adv - paid};
+}
 
 // ---------- undo ----------
 let undoSnap = null;
-function snapshot(){ undoSnap = JSON.stringify({tasks:db.tasks, projects:db.projects}); }
-function undo(){ if (!undoSnap) return; const u = JSON.parse(undoSnap); db.tasks = u.tasks; db.projects = u.projects; undoSnap = null; if (view === "project" && !projById(curProj)) view = "projects"; save(); render(); }
+function snapshot(){ undoSnap = JSON.stringify({tasks:db.tasks, projects:db.projects, employees:db.employees, payments:db.payments}); }
+function undo(){ if (!undoSnap) return; const u = JSON.parse(undoSnap); db.tasks = u.tasks; db.projects = u.projects; db.employees = u.employees || db.employees; db.payments = u.payments || db.payments; undoSnap = null; if (view === "project" && !projById(curProj)) view = "projects"; if (view === "employee" && !empById(curEmp)) view = "employees"; save(); render(); }
 
 // ---------- quick add parser ----------
 function parseQuick(text){
@@ -696,6 +816,7 @@ function parseQuick(text){
   const t = {id:uid(), title:"", notes:"", date:today(), time:"", repeat:"none", days:[], remind:db.settings.defaultRemind, priority:"normal", createdAt:Date.now(), order:minOrder()-1};
   if (/(^|\s)!(\s|$)/.test(s) || /\b(urgent|important)\b/i.test(s)) { t.priority = "high"; s = s.replace(/(^|\s)!(?=\s|$)/g," "); }
   const rx = (re, fn) => { const m = s.match(re); if (m){ fn(m); s = s.replace(re," "); } };
+  { const m = s.match(/(?:^|\s)@([^\s@]+)/); const em = m && findEmp(m[1]); if (em){ t.emp = em.id; s = s.replace(m[0], " "); } }
   { const m = s.match(/(?:^|\s)#([^\s#]+)/); const pr = m && findProj(m[1]); if (pr){ t.project = pr.id; s = s.replace(m[0], " "); } }
   rx(/(?:^|\s)!?p([1-4])(?=\s|$)/i, m => t.priority = ["", "high", "p2", "p3", "normal"][+m[1]]);
   rx(/\b(every\s+month|monthly)\b/i, () => t.repeat = "monthly");
@@ -719,12 +840,13 @@ function describe(t){
   if (t.time) bits.push(fmtTime(t.time));
   if (prioN(t) < 4) bits.push("🚩 Priority " + prioN(t));
   if (projOf(t)) bits.push("# " + projOf(t).name);
+  if (empOf(t)) bits.push("👤 " + empOf(t).name);
   if (t.remind >= 0 && t.time) bits.push("🔔 " + (t.remind ? t.remind + " min before" : "on time"));
   return bits;
 }
 
 // ---------- rendering ----------
-let view = "today", selId = null, curProj = null;
+let view = "today", selId = null, curProj = null, curEmp = null, empMonth = null, payDayV = null;
 const SVG = {
   cal:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="1.5" y="2" width="9" height="8.5" rx="1.5"/><path d="M1.5 4.5h9M4 1v2M8 1v2"/></svg>',
   rep:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M2 6a4 4 0 0 1 6.8-2.8L10 4.5M10 2v2.5H7.5M10 6a4 4 0 0 1-6.8 2.8L2 7.5M2 10V7.5h2.5"/></svg>',
@@ -756,6 +878,8 @@ function taskRow(t, d, opts={}){
   if (t.remind >= 0 && t.time && !done) m.push(`<span class="chip" title="Reminder ${t.remind ? t.remind+" min before" : "on time"}">${SVG.bell}</span>`);
   const ss = subStats(t, d);
   if (ss.n) m.push(`<span class="chip subs ${expanded.has(t.id)?"open":""}" data-act="subs" title="Show sub-tasks"><span class="tw">›</span>${SVG.sub}${ss.done}/${ss.n}</span>`);
+  const em = !opts.hideEmp && empOf(t);
+  if (em) m.push(`<span class="chip emp" title="Assigned to ${esc(em.name)}">👤 ${esc(em.name.split(/\s+/)[0])}</span>`);
   const pr = !opts.hideProj && projOf(t);
   if (pr) m.push(`<span class="chip proj"><span>${esc(pr.name)}</span><span class="pdot" style="background:${pr.color}"></span></span>`);
   const drag = opts.drag !== false;
@@ -774,14 +898,15 @@ function render(){
   $("todayLabel").textContent = nice(today());
   $("todayNum").textContent = new Date().getDate();
   if (view === "project" && !projById(curProj)) view = "projects";
+  if (view === "employee" && !empById(curEmp)) view = "employees";
   for (const s of document.querySelectorAll("main section")) s.classList.toggle("hidden", s.id !== "view-"+view);
-  for (const b of document.querySelectorAll("#nav button")) b.classList.toggle("on", b.dataset.view === view || (view === "project" && b.dataset.view === "projects"));
-  const vt = {today:"Today", upcoming:"Upcoming", all:"All tasks", projects:"My projects", history:"History", settings:"Settings & backup"};
-  $("mTitle").textContent = view === "project" ? (projById(curProj) || {}).name || "" : vt[view] || "";
+  for (const b of document.querySelectorAll("#nav button")) b.classList.toggle("on", b.dataset.view === view || (view === "project" && b.dataset.view === "projects") || (view === "employee" && b.dataset.view === "employees"));
+  const vt = {today:"Today", upcoming:"Upcoming", all:"All tasks", projects:"My projects", employees:"Employees", history:"History", settings:"Settings & backup"};
+  $("mTitle").textContent = view === "project" ? (projById(curProj) || {}).name || "" : view === "employee" ? (empById(curEmp) || {}).name || "" : vt[view] || "";
   const openCount = p => db.tasks.filter(t => t.project === p.id && (t.repeat !== "none" || !t.done)).length;
   $("projNav").innerHTML = projsSorted().map(p => `<button data-proj="${p.id}" class="${view === "project" && curProj === p.id ? "on" : ""}"><span class="ico"><span class="pdot" style="background:${p.color}"></span></span><span class="lbl">${esc(p.name)}</span><span class="badge">${openCount(p) || ""}</span></button>`).join("");
   // the add-task form follows you into a project page
-  const slot = view === "project" ? $("pAddSlot") : $("addHome");
+  const slot = view === "project" ? $("pAddSlot") : view === "employee" ? $("eAddSlot") : $("addHome");
   if ($("addRow").parentNode !== slot){ closeAdd(); slot.append($("addRow"), $("addForm")); }
   $("notifNotice").classList.toggle("hidden", (IS_ANDROID && !swReg) || !("Notification" in window) || Notification.permission !== "default");
   $("phoneHint").classList.toggle("hidden", !IS_ANDROID);
@@ -843,6 +968,12 @@ function render(){
     $("pDoneSum").textContent = `Completed (${done.length})`;
     $("pDoneList").innerHTML = done.map(t => taskRow(t, t.date, {showDate:true, hideProj:true, drag:false})).join("");
   }
+  if (view === "employees" || view === "employee"){
+    empMonth = empMonth || thisMonth();
+    for (const el of document.querySelectorAll(".mlabel")) el.textContent = monthName(empMonth, true) + (empMonth === thisMonth() ? " (this month)" : "");
+  }
+  if (view === "employees") renderEmployees();
+  if (view === "employee") renderEmployee();
   if (view === "history") $("historyBody").innerHTML = historyRows().map(r =>
     `<tr><td>${short(r.date)}</td><td>${r.done}/${r.total}</td><td>${esc(r.titles.join(", "))}</td><td style="white-space:pre-wrap">${esc(r.log)}</td></tr>`).join("") || `<tr><td colspan="4" class="empty">History builds up as you use the app.</td></tr>`;
   if (view === "settings"){
@@ -852,6 +983,55 @@ function render(){
     $("setMorning").value = db.settings.morning || "";
   }
   renderDrawer();
+}
+// ---------- employees ----------
+function payRow(p, showWho){
+  const e = empById(p.emp), who = showWho ? (e ? esc(e.name) : "Former employee") : `${short(p.date)}`;
+  const sub = (showWho ? "" : "") + `<span class="kind ${p.kind}">${KIND[p.kind] || p.kind}</span>` + (p.kind === "advance" ? `from ${monthName(p.month)} salary` : `for ${monthName(p.month)}`) + (p.note ? ` · ${esc(p.note)}` : "");
+  return `<div class="pay-row" data-pay-id="${p.id}"><div class="who"><div class="n">${who}</div><div class="r">${sub}</div></div><span class="amt">${money(p.amount)}</span><button class="x" data-act="paydel" title="Delete payment">×</button></div>`;
+}
+function renderEmployees(){
+  const es = empsSorted(), m = empMonth;
+  const L = es.map(e => [e, ledger(e, m)]);
+  const tot = k => L.reduce((a,[,l]) => a + l[k], 0), toPay = L.reduce((a,[,l]) => a + Math.max(0, l.due), 0);
+  $("empStats").innerHTML = es.length ? `<div class="stat"><div class="k">Salaries</div><div class="v">${money(tot("salary") + tot("bonus"))}</div></div>
+    <div class="stat ok"><div class="k">Paid</div><div class="v">${money(tot("paid"))}</div></div>
+    <div class="stat"><div class="k">Advances taken</div><div class="v">${money(tot("adv"))}</div></div>
+    <div class="stat ${toPay ? "due" : "ok"}"><div class="k">Still to pay</div><div class="v">${money(toPay)}</div></div>` : "";
+  $("empTeamSub").textContent = es.length ? `${es.length} ${es.length === 1 ? "person" : "people"}` : "";
+  $("empList").innerHTML = es.length ? L.map(([e,l]) => { const open = db.tasks.filter(t => t.emp === e.id && (t.repeat !== "none" || !t.done)).length;
+    return `<div class="emp-row" data-emp="${e.id}">${avatar(e)}<div class="who"><div class="n">${esc(e.name)}</div><div class="r">${[e.role, e.salary ? money(e.salary) + " a month" : "", open ? open + " task" + (open > 1 ? "s" : "") : ""].filter(Boolean).map(esc).join(" · ")}</div></div>
+      <div class="st ${l.due > 0 ? "due" : "ok"}">${l.due > 0 ? money(l.due) : l.salary ? "Paid ✓" : ""}<small>${l.due > 0 ? "to pay" : l.due < 0 ? money(-l.due) + " over" : ""}</small></div></div>`; }).join("")
+    : `<div class="empty"><span class="big">👥</span>Add your employees to track salaries, advances and their tasks.</div>`;
+  payDayV = payDayV || today();
+  if (document.activeElement !== $("payDay")) $("payDay").value = payDayV;
+  const ps = db.payments.filter(p => p.date === payDayV).sort((a,b) => (a.createdAt||0) - (b.createdAt||0));
+  $("payDayTotal").textContent = ps.length ? "Total " + money(ps.reduce((a,p) => a + (+p.amount||0), 0)) : "";
+  $("payDayList").innerHTML = ps.length ? ps.map(p => payRow(p, true)).join("") : `<div class="empty" style="padding:14px 4px;text-align:left">No payments on this day.</div>`;
+}
+function renderEmployee(){
+  const e = empById(curEmp), m = empMonth, l = ledger(e, m);
+  $("eAv").outerHTML = avatar(e, "big").replace('<span class="avatar', '<span id="eAv" class="avatar');
+  $("eName").textContent = e.name;
+  $("eSub").textContent = [e.role, e.phone, e.salary ? money(e.salary) + " a month" : "No salary set"].filter(Boolean).join(" · ");
+  $("eLedger").innerHTML = `<div class="ln"><span>Salary for ${monthName(m, true)}</span><span>${money(l.salary)}</span></div>`
+    + (l.bonus ? `<div class="ln"><span>+ Bonus</span><span>${money(l.bonus)}</span></div>` : "")
+    + `<div class="ln"><span>− Advances taken from it</span><span>${money(l.adv)}</span></div>`
+    + `<div class="ln"><span>− Salary already paid</span><span>${money(l.paid)}</span></div>`
+    + `<div class="ln tot ${l.due > 0 ? "due" : "ok"}"><span>${l.due >= 0 ? "Left to pay" : "Paid more than due"}</span><span>${money(Math.abs(l.due))}${l.due === 0 && l.salary ? " ✓" : ""}</span></div>`;
+  const nm = addMonths(m, 1), nadv = ledger(e, nm).adv;
+  $("eNext").textContent = nadv ? `${money(nadv)} in advances will come off the ${monthName(nm, true)} salary.` : "";
+  const mine = db.tasks.filter(t => t.emp === e.id), rowDate = t => t.repeat === "none" ? t.date : today();
+  const open = mine.filter(t => !isDone(t, rowDate(t))).sort((a,b) => (a.repeat === "none" ? a.date : "0").localeCompare(b.repeat === "none" ? b.date : "0") || byTime(a,b));
+  const done = mine.filter(t => t.repeat === "none" && t.done).sort((a,b) => b.date.localeCompare(a.date));
+  $("eTaskSub").textContent = open.length ? `${open.length} open` : "";
+  $("eTasks").innerHTML = open.length ? open.map(t => taskRow(t, rowDate(t), {showDate:true, hideEmp:true, drag:false})).join("")
+    : `<div class="empty" style="padding:14px 4px;text-align:left">No tasks for ${esc(e.name.split(/\s+/)[0])}. Add one below, or type @${esc(e.name.split(/\s+/)[0])} in any task.</div>`;
+  $("eDoneWrap").classList.toggle("hidden", !done.length);
+  $("eDoneSum").textContent = `Completed (${done.length})`;
+  $("eDoneList").innerHTML = done.map(t => taskRow(t, t.date, {showDate:true, hideEmp:true, drag:false})).join("");
+  const hist = db.payments.filter(p => p.emp === e.id).sort((a,b) => b.date.localeCompare(a.date) || (b.createdAt||0) - (a.createdAt||0));
+  $("eHistory").innerHTML = hist.length ? hist.map(p => payRow(p, false)).join("") : `<div class="empty" style="padding:14px 4px;text-align:left">No payments yet.</div>`;
 }
 // ---------- My Day ----------
 const doneCount = d => db.tasks.filter(t => t.repeat === "none" ? (t.done && t.doneAt === d) : (t.doneDates && t.doneDates[d])).length;
@@ -945,6 +1125,8 @@ function renderDrawer(){
   set("dRepeat", t.repeat); set("dRemind", t.remind); set("dPrio", t.priority);
   $("dProj").innerHTML = `<option value="">No project</option>` + projsSorted().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
   $("dProj").value = projOf(t) ? t.project : "";
+  $("dEmp").innerHTML = `<option value="">Nobody</option>` + empsSorted().map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join("");
+  $("dEmp").value = empOf(t) ? t.emp : "";
   const sd = t.repeat === "none" ? t.date : today(), ss = subStats(t, sd);
   $("dSubCount").textContent = ss.n ? `${ss.done}/${ss.n}` : "";
   const ed = $("dSubs");
@@ -976,6 +1158,7 @@ $("dPrio").addEventListener("change", e => drawerEdit(t => t.priority = e.target
 $("dDays").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
   drawerEdit(t => { const n = +b.dataset.day; t.days = (t.days||[]).includes(n) ? t.days.filter(x => x !== n) : [...(t.days||[]), n]; }); });
 $("dProj").addEventListener("change", e => drawerEdit(t => t.project = e.target.value || undefined));
+$("dEmp").addEventListener("change", e => drawerEdit(t => t.emp = e.target.value || undefined));
 $("dSubAdd").addEventListener("keydown", e => {
   if (e.key !== "Enter") return; e.preventDefault();
   const v = e.target.value.trim(); if (!v) return;
@@ -1021,6 +1204,88 @@ document.querySelector("aside").addEventListener("click", e => { if (e.target.cl
 { let x0 = null; const a = document.querySelector("aside");
   a.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive:true});
   a.addEventListener("touchend", e => { if (x0 != null && x0 - e.changedTouches[0].clientX > 60) closeMenu(); x0 = null; }); }
+// ---------- employee events ----------
+function openEmployee(id){ curEmp = id; view = "employee"; render(); window.scrollTo && window.scrollTo(0,0); }
+$("empList").addEventListener("click", e => { const r = e.target.closest("[data-emp]"); if (r) openEmployee(r.dataset.emp); });
+document.addEventListener("click", e => { const b = e.target.closest(".monthbar [data-m]"); if (!b) return; empMonth = addMonths(empMonth || thisMonth(), +b.dataset.m); render(); });
+$("payDay").addEventListener("change", e => { payDayV = e.target.value || today(); render(); });
+let empEditing = null;
+function empDialog(e){
+  empEditing = e || null;
+  $("empDlgH").textContent = e ? "Edit employee" : "Add employee"; $("empSave").textContent = e ? "Save" : "Add";
+  $("empName").value = e ? e.name : ""; $("empRole").value = e ? e.role || "" : ""; $("empSalary").value = e && e.salary ? e.salary : ""; $("empPhone").value = e ? e.phone || "" : "";
+  $("empDlg").showModal(); $("empName").focus();
+}
+function saveEmp(){
+  const name = $("empName").value.trim().replace(/^@/, ""); if (!name){ $("empName").focus(); return; }
+  const f = {name, role:$("empRole").value.trim(), salary:Math.max(0, Math.round(+$("empSalary").value || 0)), phone:$("empPhone").value.trim()};
+  if (empEditing) Object.assign(empEditing, f);
+  else { const e = Object.assign({id:"e_"+uid(), createdAt:Date.now()}, f); db.employees.push(e); curEmp = e.id; view = "employee"; }
+  $("empDlg").close(); save(); render();
+}
+$("empAdd").onclick = () => empDialog(); $("eEdit").onclick = () => empDialog(empById(curEmp));
+$("empCancel").onclick = () => $("empDlg").close(); $("empSave").onclick = saveEmp;
+for (const id of ["empName","empRole","empSalary","empPhone"]) $(id).addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); saveEmp(); } });
+$("eDel").onclick = () => {
+  const e = empById(curEmp); if (!e) return;
+  const n = db.payments.filter(p => p.emp === e.id).length;
+  if (!confirm(`Delete ${e.name}${n ? ` and their ${n} payment record${n>1?"s":""}` : ""}? Their tasks stay, with nobody assigned.`)) return;
+  snapshot();
+  db.payments = db.payments.filter(p => p.emp !== e.id); db.employees = db.employees.filter(x => x !== e);
+  db.tasks.forEach(t => { if (t.emp === e.id) delete t.emp; });
+  view = "employees"; save(); render(); toast(`Deleted ${e.name}`, true);
+};
+// payment dialog
+let payKindV = "salary";
+const KIND_HINT = {salary:"Salary you paid for a month. It comes off what's left to pay for that month.",
+  advance:"Money given early. It comes off the salary of the month you pick, next month by default.",
+  bonus:"Extra money on top of the salary for that month."};
+function setPayKind(k, touchMonth){
+  payKindV = k;
+  for (const b of $("payKind").children) b.classList.toggle("on", b.dataset.k === k);
+  $("payKindHint").textContent = KIND_HINT[k];
+  $("payMonthL").textContent = k === "advance" ? "Take it from the salary of" : "For the salary of";
+  if (touchMonth){
+    const base = empMonth || thisMonth();
+    $("payMonth").value = k === "advance" ? addMonths(thisMonth(), 1) : base;
+    const e = empById($("payEmp").value);
+    $("payAmt").value = k === "salary" && e ? Math.max(0, ledger(e, $("payMonth").value).due) || "" : "";
+  }
+}
+function payDialog(kind, empId){
+  if (!db.employees.length){ toast("Add an employee first."); return; }
+  $("payEmp").innerHTML = empsSorted().map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join("");
+  $("payEmp").value = empId || empsSorted()[0].id;
+  $("payDate").value = today(); $("payNote").value = "";
+  setPayKind(kind || "salary", true);
+  $("payDlgH").textContent = "Record a payment";
+  $("payDlg").showModal(); $("payAmt").focus();
+}
+$("payKind").onclick = e => { const b = e.target.closest("button"); if (b) setPayKind(b.dataset.k, true); };
+$("payEmp").onchange = () => setPayKind(payKindV, true);
+$("payMonth").onchange = () => { const e = empById($("payEmp").value); if (payKindV === "salary" && e) $("payAmt").value = Math.max(0, ledger(e, $("payMonth").value).due) || ""; };
+document.addEventListener("click", e => { const b = e.target.closest("[data-pay]"); if (b) payDialog(b.dataset.pay, view === "employee" ? curEmp : null); });
+$("payCancel").onclick = () => $("payDlg").close();
+function savePay(){
+  const amt = Math.round(+$("payAmt").value || 0); if (amt <= 0){ $("payAmt").focus(); toast("Enter an amount."); return; }
+  const p = {id:"m_"+uid(), emp:$("payEmp").value, kind:payKindV, amount:amt, date:$("payDate").value || today(), month:$("payMonth").value || thisMonth(), note:$("payNote").value.trim(), createdAt:Date.now()};
+  db.payments.push(p); $("payDlg").close(); save(); render();
+  toast(`${KIND[p.kind]} of ${money(amt)} saved for ${empById(p.emp).name}`);
+}
+$("paySave").onclick = savePay;
+for (const id of ["payAmt","payNote"]) $(id).addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); savePay(); } });
+document.querySelector("main").addEventListener("click", e => {
+  const b = e.target.closest("[data-act=paydel]"); if (!b) return;
+  const id = b.closest("[data-pay-id]").dataset.payId, p = db.payments.find(x => x.id === id); if (!p) return;
+  snapshot(); db.payments = db.payments.filter(x => x !== p); save(); render(); toast(`Deleted ${KIND[p.kind].toLowerCase()} of ${money(p.amount)}`, true);
+});
+$("payCsv").onclick = () => {
+  const q = v => '"'+String(v).replace(/"/g,'""')+'"';
+  const lines = [["Date","Employee","Type","Salary month","Amount (Rs)","Note"].map(q).join(",")];
+  for (const p of db.payments.slice().sort((a,b) => a.date.localeCompare(b.date)))
+    lines.push([p.date, (empById(p.emp) || {name:"Former employee"}).name, KIND[p.kind], p.month, p.amount, p.note || ""].map(q).join(","));
+  download(`payments-${today()}.csv`, "\ufeff"+lines.join("\r\n"), "text/csv");
+};
 function openProject(id){ curProj = id; view = "project"; render(); }
 $("projNav").addEventListener("click", e => { const b = e.target.closest("[data-proj]"); if (b) openProject(b.dataset.proj); });
 $("projList").addEventListener("click", e => { const b = e.target.closest("[data-proj]"); if (b) openProject(b.dataset.proj); });
@@ -1064,7 +1329,7 @@ $("sortSeg").addEventListener("click", e => { const b = e.target.closest("button
 $("showDoneAll").onchange = render;
 // Todoist-style inline add form
 function openAdd(){
-  if (view !== "today" && view !== "project"){ view = "today"; render(); }
+  if (view !== "today" && view !== "project" && view !== "employee"){ view = "today"; render(); }
   $("addRow").classList.add("hidden"); $("addForm").classList.remove("hidden"); $("quick").focus();
 }
 function closeAdd(){
@@ -1081,10 +1346,13 @@ function addFromForm(){
   const t = parseQuick(v); if (!t.title) return;
   t.notes = $("quickDesc").value.trim();
   if (view === "project" && !t.project) t.project = curProj;
+  if (view === "employee" && !t.emp) t.emp = curEmp;
   db.tasks.push(t); save();
   $("quick").value = ""; $("quickDesc").value = ""; showPreview(); $("quick").focus();
   render();
-  if (view !== "project" && projOf(t)) toast(`Added to ${projOf(t).name}`);
+  if (view === "employee") {}
+  else if (view !== "project" && empOf(t)) toast(`Assigned to ${empOf(t).name}`);
+  else if (view !== "project" && projOf(t)) toast(`Added to ${projOf(t).name}`);
   else if (view !== "project" && (t.date !== today() || (t.repeat !== "none" && !occursOn(t,today())))) toast(`Added: ${t.repeat !== "none" ? repeatLabel(t) : dayName(t.date)}`);
 }
 $("quick").addEventListener("input", showPreview);
@@ -1438,14 +1706,18 @@ const Sync = (() => {
       logStamps[d] = Math.max(Ls[d] || 0, Rs[d] || 0);
     }
     tasks.sort((a,b) => a.id < b.id ? -1 : 1);
-    const pp = {};
-    for (const p of [...(R.projects || []), ...(L.projects || [])]){ const c = pp[p.id]; if (!c || (p.updatedAt || 0) >= (c.updatedAt || 0)) pp[p.id] = p; }
-    const projects = Object.values(pp).filter(p => !(del[p.id] > (p.updatedAt || 0))).sort((a,b) => a.id < b.id ? -1 : 1);
-    for (const k in del) if (pp[k] && !(del[k] > (pp[k].updatedAt || 0))) delete del[k];
+    // projects, employees and payments merge the same way as tasks
+    const lists = {};
+    for (const key of ["projects", "employees", "payments"]){
+      const pp = {};
+      for (const p of [...(R[key] || []), ...(L[key] || [])]){ const c = pp[p.id]; if (!c || (p.updatedAt || 0) >= (c.updatedAt || 0)) pp[p.id] = p; }
+      lists[key] = Object.values(pp).filter(p => !(del[p.id] > (p.updatedAt || 0))).sort((a,b) => a.id < b.id ? -1 : 1);
+      for (const k in del) if (pp[k] && !(del[k] > (pp[k].updatedAt || 0))) delete del[k];
+    }
     const c = !L.calId || (R.calId && (R.calIdAt || 0) >= (L.calIdAt || 0)) ? R : L;   // newest calendar wins
-    return {tasks, projects, logs, deleted:del, logStamps, calId:c.calId || null, calIdAt:c.calIdAt || 0};
+    return {tasks, projects:lists.projects, employees:lists.employees, payments:lists.payments, logs, deleted:del, logStamps, calId:c.calId || null, calIdAt:c.calIdAt || 0};
   }
-  const shared = d => ({tasks:d.tasks, projects:d.projects || [], logs:d.logs, deleted:d.deleted || {}, logStamps:d.logStamps || {}, calId:d.calId || null, calIdAt:d.calIdAt || 0});
+  const shared = d => ({tasks:d.tasks, projects:d.projects || [], employees:d.employees || [], payments:d.payments || [], logs:d.logs, deleted:d.deleted || {}, logStamps:d.logStamps || {}, calId:d.calId || null, calIdAt:d.calIdAt || 0});
 
   // ---- Google Calendar: one event per task with a time, kept up to date, with a phone alert at the reminder time ----
   const tzName = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1473,7 +1745,7 @@ const Sync = (() => {
     if (meta.calFor !== db.calId){ meta.calFor = db.calId; meta.calSigs = {}; }
     const sigs = meta.calSigs, want = {};
     for (const t of db.tasks) want[t.id] = eventFor(t);
-    for (const id in db.deleted) if (!(id in want) && !id.startsWith("p_")) want[id] = null;
+    for (const id in db.deleted) if (!(id in want) && !id.includes("_")) want[id] = null;   // p_, e_ and m_ ids are projects, employees and payments, not calendar events
     const base = `${CAL}/calendars/${encodeURIComponent(db.calId)}/events`;
     for (const id in want){
       const ev = want[id], sig = ev ? JSON.stringify(ev) : "-";
@@ -1660,9 +1932,9 @@ function alertUser(title, body, task){
     box.remove(); if (!document.querySelector(".alert")) stopFlash();
   };
   $("banner").appendChild(box);
-  if (!titleFlash){ let on = false; titleFlash = setInterval(() => { document.title = (on = !on) ? "🔔 "+title : "Daily Tasks"; }, 1000); }
+  if (!titleFlash){ let on = false; titleFlash = setInterval(() => { document.title = (on = !on) ? "🔔 "+title : "TKK CENTRAL"; }, 1000); }
 }
-function stopFlash(){ clearInterval(titleFlash); titleFlash = null; document.title = "Daily Tasks"; }
+function stopFlash(){ clearInterval(titleFlash); titleFlash = null; document.title = "TKK CENTRAL"; }
 window.addEventListener("focus", () => { if (!document.querySelector(".alert")) stopFlash(); });
 
 let lastDay = today();
