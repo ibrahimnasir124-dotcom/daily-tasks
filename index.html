@@ -291,6 +291,9 @@ dialog .kinds button{padding:6px 14px;font-size:13.5px}
 .inv-tot .ln:last-child{border-bottom:0}
 .inv-tot .ln b{font-variant-numeric:tabular-nums}
 .inv-tot .ln input{width:130px;text-align:right;padding:5px 8px}
+.inv-tot .spread{justify-content:flex-end;padding-top:0}
+.inv-tot .link{background:none;border:0;color:var(--accent);cursor:pointer;font-size:13px;padding:0;text-align:right}
+@media (max-width:640px){ .inv-tot .link{font-size:15px} }
 .inv-tot .big{font-size:17px} .inv-tot .big b{font-size:19px;font-weight:800}
 .inv-tot .due b{color:var(--accent-dark)} .inv-tot .ok b{color:var(--ok)}
 .inv-share{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
@@ -1476,7 +1479,8 @@ function renderInvoice(full){
   $("iCount").textContent = n ? `${n} item${n > 1 ? "s" : ""}` : "";
   const t = invTotals(v);
   if (!$("iTot").contains(act) || full) $("iTot").innerHTML = `<div class="ln"><span>Total of items</span><b>${rs(t.sub)}</b></div>
-    <div class="ln"><span>Discount</span><input id="iDisc" type="number" inputmode="decimal" min="0" step="any" value="${t.disc || ""}" placeholder="0"></div>
+    <div class="ln"><span>Discount</span><input id="iDisc" type="number" inputmode="decimal" min="0" step="any" value="${t.disc || ""}" placeholder="0"></div>${t.disc > 0 ? `
+    <div class="ln spread"><button class="link" id="iSpread">Take the discount off the item prices instead</button></div>` : ""}
     <div class="ln big"><span>Bill total</span><b id="iNet">${rs(t.net)}</b></div>
     <div class="ln"><span>Received</span><input id="iRec" type="number" inputmode="decimal" min="0" step="any" value="${t.rec || ""}" placeholder="0"></div>
     <div class="ln big ${t.bal > 0 ? "due" : "ok"}" id="iBalLn"><span>${t.bal > 0 ? "Balance due" : t.bal < 0 ? "Change to return" : "Fully paid"}</span><b id="iBal">${rs(Math.abs(t.bal))}</b></div>`;
@@ -1510,12 +1514,49 @@ $("iItems").addEventListener("click", e => {
   const v = invById(curInv), i = +b.closest(".it").dataset.i; v.items.splice(i, 1); save(); renderInvoice(true);
 });
 $("view-invoice").addEventListener("focusout", () => setTimeout(() => { if (view === "invoice" && !$("view-invoice").contains(document.activeElement)) renderInvoice(true); }, 0));
+// spread the discount over the item rates (whole rupees), so the bill shows lower prices instead of a discount line
+function spreadDiscount(v){
+  const t = invTotals(v), target = Math.round(t.net), its = v.items.filter(it => num(it.q) > 0 && num(it.r) > 0);
+  if (!(t.disc > 0) || !its.length || t.sub <= 0) return false;
+  const f = target / t.sub;
+  for (const it of its) it.r = Math.round(num(it.r) * f);
+  // put the rounding left over on the biggest single-quantity item, so the total comes out exact
+  let diff = target - v.items.reduce((a,it) => a + lineAmt(it), 0);
+  const ones = its.filter(it => num(it.q) === 1).sort((a,b) => num(b.r) - num(a.r));
+  if (diff && ones.length){ ones[0].r = num(ones[0].r) + diff; diff = 0; }
+  v.discount = diff ? -diff : 0;
+  return true;
+}
+$("iTot").addEventListener("click", e => {
+  if (!e.target.closest("#iSpread")) return;
+  const v = invById(curInv); if (!v) return;
+  snapshot(); if (spreadDiscount(v)){ save(); renderInvoice(true); toast(`Discount taken off the item prices. Total ${rs(invTotals(v).net)}`, true); }
+});
 function quickAddItem(){
   const v = invById(curInv), it = parseItem($("iQuick").value); if (!v || !it) { $("iQuick").focus(); return; }
   v.items.push(it); $("iQuick").value = ""; save(); renderInvoice(true); $("iQuick").focus();
 }
 $("iQuickAdd").onclick = quickAddItem;
 $("iQuick").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); quickAddItem(); } });
+// pasting a list (one item per line) adds every line
+$("iQuick").addEventListener("paste", e => {
+  const txt = (e.clipboardData || window.clipboardData).getData("text"), lines = txt.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (lines.length < 2) return;
+  e.preventDefault(); const v = invById(curInv); if (!v) return;
+  for (const l of lines){ const it = parseItem(l); if (it) v.items.push(it); }
+  save(); renderInvoice(true); toast(`Added ${lines.length} items`);
+});
+// a link like …/#bill?c=Customer&p=0300…&d=2026-11-04&i=Item 1 x 500%0AOther 2 x 250 opens as a new invoice
+function importFromLink(){
+  const h = location.hash; if (!h.startsWith("#bill?")) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  const q = new URLSearchParams(h.slice(6)), src = h.slice(6);
+  const old = db.invoices.find(v => v.src === src); if (old){ openInvoice(old.id); return; }
+  const items = (q.get("i") || "").split(/\r?\n|\|/).map(parseItem).filter(Boolean);
+  const d = q.get("d"), v = {id:"i_"+uid(), no:nextInvNo(), date:/^\d{4}-\d\d-\d\d$/.test(d || "") ? d : today(), customer:q.get("c") || "", phone:q.get("p") || "",
+    items, discount:num(q.get("disc")), received:num(q.get("rec")), note:q.get("n") || "", src, createdAt:Date.now()};
+  db.invoices.push(v); save(); openInvoice(v.id); toast(`Invoice #${v.no} added with ${items.length} item${items.length === 1 ? "" : "s"}`);
+}
 $("iAddRow").onclick = () => { const v = invById(curInv); v.items.push({n:"", q:1, r:""}); save(); renderInvoice(true); const ins = $("iItems").querySelectorAll(".nm"); ins[ins.length-1].focus(); };
 $("invNew").onclick = () => newInvoice();
 $("invList").addEventListener("click", e => { const r = e.target.closest("[data-inv]"); if (r) openInvoice(r.dataset.inv); if (e.target.closest("[data-act=pad]")) padDialog(); });
@@ -2384,7 +2425,8 @@ setInterval(() => { tick(); if (view === "today" && !document.querySelector(".dr
 window.addEventListener("storage", e => { if (e.key === KEY && e.newValue){ try { db = load(JSON.parse(e.newValue)); markKnown(); render(); } catch(_){} } });
 
 window.__dailyTasks = {Backup, Sync};
-render(); tick(); Backup.init(); Sync.init();
+importFromLink(); render(); tick(); Backup.init(); Sync.init();
+window.addEventListener("hashchange", importFromLink);
 })();
 </script>
 </body>
