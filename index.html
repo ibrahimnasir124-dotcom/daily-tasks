@@ -266,6 +266,51 @@ dialog .kinds button{padding:6px 14px;font-size:13.5px}
   .emp-row .n{font-size:17px} .emp-row .r,.pay-row .r{font-size:14px} .emp-row .st{font-size:15px} .emp-row .st small{font-size:13px}
   .ledger .ln{font-size:16px} .ledger .tot{font-size:18px} .pay-row{font-size:16px} .monthbar .mlabel{font-size:17px}
   dialog .form label{font-size:14px} dialog .kinds button{font-size:15px;padding:8px 14px} .ehead .sub{font-size:15px} }
+/* invoices */
+.inv-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.inv-row:hover{background:var(--hover)}
+.inv-row .no{width:46px;height:36px;border-radius:8px;background:var(--accent-soft);color:var(--accent-dark);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.inv-row .who{flex:1;min-width:0} .inv-row .n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .inv-row .r{font-size:12.5px;color:var(--muted)}
+.inv-row .st{text-align:right;font-size:14px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.inv-row .st small{display:block;font-weight:600;font-size:12px}
+.inv-row .st small.due{color:var(--accent-dark)} .inv-row .st small.ok{color:var(--ok)}
+.inv-items{border-top:1px solid var(--line)}
+.it{display:grid;grid-template-columns:28px 1fr 74px 104px 110px 30px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.it .sn{color:var(--muted);font-weight:700;font-size:13px;text-align:center}
+.it input{padding:7px 8px}
+.it input.q,.it input.r{text-align:right;font-variant-numeric:tabular-nums}
+.it .amt{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.it .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:20px;padding:0;opacity:.6}
+.it .x:hover{opacity:1;color:var(--danger)}
+.it-head{font-size:12px;font-weight:700;color:var(--muted);border-bottom:0;padding-bottom:0}
+.it-head span:nth-child(n+3){text-align:right}
+.quick-item{display:flex;gap:8px;margin:12px 0 4px}
+.quick-item input{flex:1}
+.inv-tot{background:var(--side);border:1px solid var(--line);border-radius:12px;padding:6px 16px;margin:16px 0 12px;max-width:420px;margin-left:auto}
+.inv-tot .ln{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.inv-tot .ln:last-child{border-bottom:0}
+.inv-tot .ln b{font-variant-numeric:tabular-nums}
+.inv-tot .ln input{width:130px;text-align:right;padding:5px 8px}
+.inv-tot .big{font-size:17px} .inv-tot .big b{font-size:19px;font-weight:800}
+.inv-tot .due b{color:var(--accent-dark)} .inv-tot .ok b{color:var(--ok)}
+.inv-share{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.btn.wa{background:#25d366;color:#fff} .btn.wa:hover{background:#1ebe5a}
+.btn.wa svg{width:18px;height:18px;vertical-align:-4px;margin-right:6px}
+.inv-preview{background:var(--side);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.inv-preview img{max-width:100%;width:560px;border-radius:4px;box-shadow:0 2px 14px rgba(0,0,0,.15);display:block;margin:0 auto}
+#invPrint{display:none}
+@media print{ body.print-inv>*{display:none!important} body.print-inv #invPrint{display:block!important;width:100%} @page{margin:8mm} }
+@media (max-width:640px){
+  .inv-row .n{font-size:17px} .inv-row .r{font-size:14px} .inv-row .st{font-size:16px} .inv-row .st small{font-size:13px}
+  .it{grid-template-columns:24px 1fr 1fr 1.2fr 28px;grid-template-areas:"sn nm nm nm x" ". q r amt amt";row-gap:8px;padding:12px 0}
+  .it .sn{grid-area:sn;font-size:15px} .it .nm{grid-area:nm;font-size:17px;font-weight:600} .it .q{grid-area:q} .it .r{grid-area:r} .it .amt{grid-area:amt;font-size:17px} .it .x{grid-area:x;font-size:26px}
+  .it-head{display:none}
+  .inv-tot{max-width:none} .inv-tot .ln{font-size:16px} .inv-tot .big{font-size:18px} .inv-tot .big b{font-size:21px} .inv-tot .ln input{width:140px}
+  .inv-share .btn{flex:1 1 auto;font-size:16px;padding:12px 14px}
+  .inv-preview{padding:8px}
+}
+.flbl{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+@media (max-width:640px){ .flbl{font-size:14px} }
 .log-box textarea{min-height:110px;background:var(--side)}
 #fab{display:none}
 /* projects */
@@ -369,6 +414,7 @@ aside nav .ico .pdot{width:10px;height:10px}
     <button data-view="all"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 13.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4.5M4 13.5 6.5 5h11l2.5 8.5M4 13.5h4.5a3.5 3.5 0 0 0 7 0H20"/></svg></span><span class="lbl">All tasks</span><span class="badge" id="badgeAll"></span></button>
     <button data-view="projects"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></svg></span><span class="lbl">Projects</span></button>
     <button data-view="employees"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="16.8" cy="9.5" r="2.5"/><path d="M15.5 14.2a4.6 4.6 0 0 1 5 4.8"/></svg></span><span class="lbl">Employees</span><span class="badge" id="badgeEmp"></span></button>
+    <button data-view="invoices"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/></svg></span><span class="lbl">Invoices</span><span class="badge" id="badgeInv"></span></button>
     <button data-view="history"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span class="lbl">History</span></button>
     <button data-view="settings"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg></span><span class="lbl">Settings &amp; backup</span></button>
   </nav>
@@ -492,6 +538,41 @@ aside nav .ico .pdot{width:10px;height:10px}
     <details class="completed" id="eDoneWrap"><summary id="eDoneSum"></summary><div id="eDoneList"></div></details>
     <div class="sec-head" style="margin-top:24px">Payment history</div>
     <div id="eHistory"></div>
+  </section>
+
+  <!-- INVOICES -->
+  <section id="view-invoices" class="hidden">
+    <div class="page-head"><h2>Invoices</h2><span class="spacer"></span><button class="btn primary" id="invNew">+ New invoice</button></div>
+    <div class="page-sub" id="invSub"></div>
+    <div class="stats" id="invStats"></div>
+    <div class="sec-head">All invoices<span class="spacer"></span><button class="link" id="invPad">Edit invoice pad</button></div>
+    <input id="invSearch" type="search" placeholder="Search by customer or item" autocomplete="off" style="margin:10px 0 2px">
+    <div id="invList"></div>
+  </section>
+
+  <!-- ONE INVOICE -->
+  <section id="view-invoice" class="hidden">
+    <div class="page-head"><h2 id="iTitle">Invoice</h2><span class="spacer"></span>
+      <button class="icon-btn" id="iCopy" title="Make a copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></svg></button><button class="icon-btn" id="iDel" title="Delete invoice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v6M13.5 10.5v6"/></svg></button></div>
+    <div class="two" style="margin-top:8px"><div><label class="flbl" for="iCust">Customer</label><input id="iCust" maxlength="80" autocomplete="off" placeholder="Name of customer or shop" list="invCustList"></div>
+      <div><label class="flbl" for="iPhone">WhatsApp number</label><input id="iPhone" type="tel" maxlength="20" autocomplete="off" placeholder="03xx xxxxxxx"></div></div>
+    <div class="two"><div><label class="flbl" for="iDate">Date</label><input id="iDate" type="date"></div>
+      <div><label class="flbl" for="iNo">Invoice no.</label><input id="iNo" type="number" inputmode="numeric" min="1" step="1"></div></div>
+    <div class="sec-head" style="margin-top:20px">Items<span class="sub" id="iCount"></span></div>
+    <div class="quick-item"><input id="iQuick" autocomplete="off" enterkeyhint="done" placeholder="Type an item, e.g. LED bulb 10 x 250" list="invItemList"><button class="btn primary" id="iQuickAdd">Add</button></div>
+    <div class="hint" style="margin:0 0 10px">Name, then quantity × rate. You can change anything in the list below.</div>
+    <div class="inv-items"><div class="it it-head"><span>#</span><span>Item</span><span>Qty</span><span>Rate (Rs)</span><span>Amount</span><span></span></div><div id="iItems"></div></div>
+    <button class="btn ghost" id="iAddRow" style="margin-top:8px;color:var(--accent)">+ Add a blank line</button>
+    <div class="inv-tot" id="iTot"></div>
+    <label class="flbl" for="iNote">Note on the invoice</label><input id="iNote" maxlength="160" autocomplete="off" placeholder="Optional, e.g. Delivery on Friday">
+    <div class="sec-head" style="margin-top:22px">Invoice to send</div>
+    <div class="inv-share" style="margin-top:12px">
+      <button class="btn wa" id="iShare"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.9a8.1 8.1 0 0 1-4.2-1.2l-.3-.2-3 .8.8-3-.2-.3A8.1 8.1 0 1 1 12 20.1zm4.5-6c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3z"/></svg>Share on WhatsApp</button>
+      <button class="btn" id="iSave">Save image</button>
+      <button class="btn" id="iPdf">Print / PDF</button>
+      <button class="btn" id="iText" title="Send the invoice as a text message">Send as text</button>
+    </div>
+    <div class="inv-preview"><img id="iImg" alt="Invoice preview"></div>
   </section>
 
   <!-- HISTORY -->
@@ -658,6 +739,26 @@ aside nav .ico .pdot{width:10px;height:10px}
   <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" id="payCancel">Cancel</button><button class="btn primary" id="paySave">Save</button></div>
 </dialog>
 
+<dialog id="padDlg">
+  <h2>Invoice pad</h2>
+  <div class="hint" style="margin-top:0">Printed on every invoice, like your bill book. Already filled in from your pad photo.</div>
+  <div class="form">
+    <label for="padName">Shop name</label><input id="padName" maxlength="60" autocomplete="off" placeholder="e.g. TKK Traders">
+    <label for="padTag">What you sell (under the name)</label><input id="padTag" maxlength="90" autocomplete="off" placeholder="e.g. Electrical &amp; Hardware Store">
+    <label for="padAddr">Address</label><input id="padAddr" maxlength="120" autocomplete="off" placeholder="Shop no., market, city">
+    <label for="padPhone">Phone numbers</label><input id="padPhone" maxlength="80" autocomplete="off" placeholder="0300 1234567, 042 1234567">
+    <div class="two"><div><label for="padWeb">Website</label><input id="padWeb" maxlength="60" autocomplete="off" placeholder="tkkitchenspk.com"></div>
+    <div><label for="padSocial">Facebook / Instagram</label><input id="padSocial" maxlength="60" autocomplete="off" placeholder="TKKpakistan"></div></div>
+    <label for="padPolicy">Return policy line</label><input id="padPolicy" maxlength="60" autocomplete="off" placeholder="10 Days Return Exchange">
+    <label for="padFoot">Line at the bottom</label><input id="padFoot" maxlength="80" autocomplete="off" placeholder="Thank you for your business">
+    <label for="padStart">First bill number (used until you've made an invoice)</label><input id="padStart" type="number" inputmode="numeric" min="1" step="1" placeholder="1">
+    <label>Ink colour</label><div class="swatches" id="padInk"></div>
+  </div>
+  <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" id="padCancel">Cancel</button><button class="btn primary" id="padSave">Save</button></div>
+</dialog>
+<datalist id="invItemList"></datalist><datalist id="invCustList"></datalist>
+<img id="invPrint" alt="">
+
 <div id="banner"></div>
 <div id="toasts"></div>
 
@@ -675,11 +776,11 @@ const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const REMIND_OPTS = [[-1,"No reminder"],[0,"At the time"],[5,"5 min before"],[10,"10 min before"],[15,"15 min before"],[30,"30 min before"],[60,"1 hour before"]];
 
 // ---------- storage ----------
-function blank(){ return {tasks:[], projects:[], employees:[], payments:[], logs:{}, notified:{}, snoozes:{}, settings:{sound:true, defaultRemind:0, morning:"09:00", sort:"mine", backupNoticeHidden:false}}; }
+function blank(){ return {tasks:[], projects:[], employees:[], payments:[], invoices:[], logs:{}, notified:{}, snoozes:{}, settings:{sound:true, defaultRemind:0, morning:"09:00", sort:"mine", backupNoticeHidden:false}}; }
 function load(obj){
   const d = Object.assign(blank(), obj || {});
   d.settings = Object.assign(blank().settings, d.settings || {});
-  for (const k of ["projects", "employees", "payments"]) if (!Array.isArray(d[k])) d[k] = [];
+  for (const k of ["projects", "employees", "payments", "invoices"]) if (!Array.isArray(d[k])) d[k] = [];
   d.tasks.forEach((t,i) => { if (t.order == null) t.order = i; });
   return d;
 }
@@ -691,12 +792,12 @@ const taskSig = t => { const {updatedAt, ...rest} = t; return JSON.stringify(res
 function markKnown(){
   db.deleted = db.deleted || {}; db.logStamps = db.logStamps || {};
   known = {tasks:{}, logs:Object.assign({}, db.logs)};
-  for (const t of [...db.tasks, ...db.projects, ...db.employees, ...db.payments]){ if (!t.updatedAt) t.updatedAt = t.createdAt || 1; known.tasks[t.id] = taskSig(t); }
+  for (const t of [...db.tasks, ...db.projects, ...db.employees, ...db.payments, ...db.invoices]){ if (!t.updatedAt) t.updatedAt = t.createdAt || 1; known.tasks[t.id] = taskSig(t); }
 }
 function stamp(){
   if (!known) return markKnown();
   const now = Date.now(), seen = {};
-  for (const t of [...db.tasks, ...db.projects, ...db.employees, ...db.payments]){
+  for (const t of [...db.tasks, ...db.projects, ...db.employees, ...db.payments, ...db.invoices]){
     const sig = taskSig(t); seen[t.id] = 1;
     if (known.tasks[t.id] !== sig){ t.updatedAt = now; delete db.deleted[t.id]; }
   }
@@ -808,8 +909,8 @@ function ledger(e, m){
 
 // ---------- undo ----------
 let undoSnap = null;
-function snapshot(){ undoSnap = JSON.stringify({tasks:db.tasks, projects:db.projects, employees:db.employees, payments:db.payments}); }
-function undo(){ if (!undoSnap) return; const u = JSON.parse(undoSnap); db.tasks = u.tasks; db.projects = u.projects; db.employees = u.employees || db.employees; db.payments = u.payments || db.payments; undoSnap = null; if (view === "project" && !projById(curProj)) view = "projects"; if (view === "employee" && !empById(curEmp)) view = "employees"; save(); render(); }
+function snapshot(){ undoSnap = JSON.stringify({tasks:db.tasks, projects:db.projects, employees:db.employees, payments:db.payments, invoices:db.invoices}); }
+function undo(){ if (!undoSnap) return; const u = JSON.parse(undoSnap); db.tasks = u.tasks; db.projects = u.projects; db.employees = u.employees || db.employees; db.payments = u.payments || db.payments; db.invoices = u.invoices || db.invoices; undoSnap = null; if (view === "invoice" && !invById(curInv)) view = "invoices"; if (view === "project" && !projById(curProj)) view = "projects"; if (view === "employee" && !empById(curEmp)) view = "employees"; save(); render(); }
 
 // ---------- quick add parser ----------
 function parseQuick(text){
@@ -900,10 +1001,11 @@ function render(){
   $("todayNum").textContent = new Date().getDate();
   if (view === "project" && !projById(curProj)) view = "projects";
   if (view === "employee" && !empById(curEmp)) view = "employees";
+  if (view === "invoice" && !invById(curInv)) view = "invoices";
   for (const s of document.querySelectorAll("main section")) s.classList.toggle("hidden", s.id !== "view-"+view);
-  for (const b of document.querySelectorAll("#nav button")) b.classList.toggle("on", b.dataset.view === view || (view === "project" && b.dataset.view === "projects") || (view === "employee" && b.dataset.view === "employees"));
-  const vt = {today:"Today", upcoming:"Upcoming", all:"All tasks", projects:"My projects", employees:"Employees", history:"History", settings:"Settings & backup"};
-  $("mTitle").textContent = view === "project" ? (projById(curProj) || {}).name || "" : view === "employee" ? (empById(curEmp) || {}).name || "" : vt[view] || "";
+  for (const b of document.querySelectorAll("#nav button")) b.classList.toggle("on", b.dataset.view === view || (view === "project" && b.dataset.view === "projects") || (view === "employee" && b.dataset.view === "employees") || (view === "invoice" && b.dataset.view === "invoices"));
+  const vt = {today:"Today", upcoming:"Upcoming", all:"All tasks", projects:"My projects", employees:"Employees", invoices:"Invoices", history:"History", settings:"Settings & backup"};
+  $("mTitle").textContent = view === "project" ? (projById(curProj) || {}).name || "" : view === "employee" ? (empById(curEmp) || {}).name || "" : view === "invoice" ? "Invoice #" + ((invById(curInv) || {}).no || "") : vt[view] || "";
   const openCount = p => db.tasks.filter(t => t.project === p.id && (t.repeat !== "none" || !t.done)).length;
   $("projNav").innerHTML = projsSorted().map(p => `<button data-proj="${p.id}" class="${view === "project" && curProj === p.id ? "on" : ""}"><span class="ico"><span class="pdot" style="background:${p.color}"></span></span><span class="lbl">${esc(p.name)}</span><span class="badge">${openCount(p) || ""}</span></button>`).join("");
   // the add-task form follows you into a project page
@@ -975,6 +1077,11 @@ function render(){
   }
   if (view === "employees") renderEmployees();
   if (view === "employee") renderEmployee();
+  if (view === "invoices") renderInvoices();
+  if (view === "invoice") renderInvoice(false);
+  $("fab").classList.toggle("hidden", view === "invoice");
+  $("fab").title = view === "invoices" ? "New invoice" : "Add task";
+  $("badgeInv").textContent = db.invoices.filter(v => invTotals(v).bal > 0 && num(v.received) > 0).length || "";
   if (view === "history") $("historyBody").innerHTML = historyRows().map(r =>
     `<tr><td>${short(r.date)}</td><td>${r.done}/${r.total}</td><td>${esc(r.titles.join(", "))}</td><td style="white-space:pre-wrap">${esc(r.log)}</td></tr>`).join("") || `<tr><td colspan="4" class="empty">History builds up as you use the app.</td></tr>`;
   if (view === "settings"){
@@ -1287,6 +1394,315 @@ $("payCsv").onclick = () => {
     lines.push([p.date, (empById(p.emp) || {name:"Former employee"}).name, KIND[p.kind], p.month, p.amount, p.note || ""].map(q).join(","));
   download(`payments-${today()}.csv`, "\ufeff"+lines.join("\r\n"), "text/csv");
 };
+// ---------- invoices ----------
+// db.invoices [{id "i_...", no, date, customer, phone, items:[{n name, q qty, r rate}], discount, received, note}], db.shop = the invoice pad
+const INKS = ["#d32027", "#1f4e9c", "#1b6e3c", "#222222", "#6a1b9a"];
+// defaults copied from the shop's printed bill book
+const SHOP0 = {name:"TKK", tag:"Kitchen & Accessories", addr:"Chowk Beadon Road, Lahore.", phone:"+92 343 7742015", web:"tkkitchenspk.com", social:"TKKpakistan", policy:"10 Days Return Exchange", foot:"Thank you for your business", ink:INKS[0], start:1};
+const shop = () => Object.assign({}, SHOP0, db.shop || {});
+const invById = id => id && db.invoices.find(v => v.id === id);
+const num = v => { const n = parseFloat(String(v ?? "").replace(/,/g, "")); return isFinite(n) ? n : 0; };
+const lineAmt = it => Math.round(num(it.q) * num(it.r) * 100) / 100;
+function invTotals(v){
+  const sub = (v.items || []).reduce((a,it) => a + lineAmt(it), 0), disc = num(v.discount), net = sub - disc, rec = num(v.received);
+  return {sub, disc, net, rec, bal: net - rec};
+}
+const rs = n => { const r = Math.round(n * 100) / 100; return "Rs " + r.toLocaleString("en-PK", {maximumFractionDigits:2}); };
+const nf = n => (Math.round(n * 100) / 100).toLocaleString("en-PK", {maximumFractionDigits:2});
+const dmy = s => { const [y,m,d] = s.split("-"); return `${d}-${m}-${y}`; };
+const invNoText = v => String(v.no || 0).padStart(4, "0");
+function nextInvNo(){ return db.invoices.length ? db.invoices.reduce((a,v) => Math.max(a, +v.no || 0), 0) + 1 : Math.max(1, +shop().start || 1); }
+// "LED bulb 10 x 250", "Wire 3 @ 1200", "Fan 4500" (qty 1), "Tape 5 50"
+function parseItem(s){
+  s = s.trim().replace(/\s+/g, " "); if (!s) return null;
+  let m = s.match(/^(.*?)\s+(\d+(?:\.\d+)?)\s*(?:x|×|\*|@)\s*(?:rs\.?\s*)?(\d[\d,]*(?:\.\d+)?)$/i);
+  if (m && m[1]) return {n:m[1], q:num(m[2]), r:num(m[3])};
+  m = s.match(/^(.*?)\s+(\d+(?:\.\d+)?)\s+(?:rs\.?\s*)?(\d[\d,]*(?:\.\d+)?)$/i);
+  if (m && m[1]) return {n:m[1], q:num(m[2]), r:num(m[3])};
+  m = s.match(/^(.*?)\s+(?:rs\.?\s*)?(\d[\d,]*(?:\.\d+)?)$/i);
+  if (m && m[1]) return {n:m[1], q:1, r:num(m[2])};
+  return {n:s, q:1, r:lastRate(s) || ""};
+}
+// the rate you charged last time for an item with this name
+function lastRate(name){
+  const k = projKey(name); let best = null;
+  for (const v of db.invoices) for (const it of v.items || []) if (projKey(it.n || "") === k && num(it.r) && (!best || (v.updatedAt || 0) > best.t)) best = {r:num(it.r), t:v.updatedAt || 0};
+  return best && best.r;
+}
+let curInv = null, invQ = "";
+function openInvoice(id){ curInv = id; view = "invoice"; render(); window.scrollTo && window.scrollTo(0,0); }
+function newInvoice(from){
+  const v = {id:"i_"+uid(), no:nextInvNo(), date:today(), customer:from ? from.customer : "", phone:from ? from.phone || "" : "",
+    items:from ? JSON.parse(JSON.stringify(from.items || [])) : [], discount:from ? from.discount || 0 : 0, received:0, note:"", createdAt:Date.now()};
+  db.invoices.push(v); save(); openInvoice(v.id);
+  if (!from) setTimeout(() => $(v.customer ? "iQuick" : "iCust").focus(), 50);
+  return v;
+}
+function renderInvoices(){
+  const all = db.invoices.slice().sort((a,b) => (b.date || "").localeCompare(a.date || "") || (b.no||0) - (a.no||0));
+  const m = thisMonth(), mine = all.filter(v => (v.date || "").startsWith(m)), T = v => invTotals(v);
+  const sales = mine.reduce((a,v) => a + T(v).net, 0), owed = all.reduce((a,v) => a + Math.max(0, T(v).bal), 0);
+  $("invSub").textContent = all.length ? "" : "Make a bill for a customer and send it on WhatsApp.";
+  $("invStats").innerHTML = all.length ? `<div class="stat"><div class="k">Invoices in ${monthName(m)}</div><div class="v">${mine.length}</div></div>
+    <div class="stat"><div class="k">Sales in ${monthName(m)}</div><div class="v">${money(sales)}</div></div>
+    <div class="stat ${owed ? "due" : "ok"}"><div class="k">Customers still owe</div><div class="v">${money(owed)}</div></div>` : "";
+  $("invStats").style.gridTemplateColumns = "repeat(auto-fit,minmax(150px,1fr))";
+  const q = projKey(invQ), list = q ? all.filter(v => projKey(v.customer || "").includes(q) || (v.items || []).some(it => projKey(it.n || "").includes(q)) || String(v.no) === invQ.trim()) : all;
+  $("invList").innerHTML = list.length ? list.map(v => { const t = T(v), n = (v.items || []).filter(it => it.n).length;
+    return `<div class="inv-row" data-inv="${v.id}"><span class="no">#${v.no}</span><div class="who"><div class="n">${esc(v.customer || "No name")}</div><div class="r">${[v.date ? short(v.date) : "", n ? n + " item" + (n > 1 ? "s" : "") : "No items"].filter(Boolean).join(" · ")}</div></div>
+      <div class="st">${money(t.net)}${t.rec || t.bal <= 0 ? `<small class="${t.bal > 0 ? "due" : "ok"}">${t.bal > 0 ? money(t.bal) + " due" : "Paid ✓"}</small>` : ""}</div></div>`; }).join("")
+    : all.length ? `<div class="empty">No invoice matches "${esc(invQ)}".</div>`
+    : `<div class="empty"><span class="big">🧾</span>No invoices yet. Tap <b>+ New invoice</b> to make your first one.${db.shop ? "" : `<br><br><button class="btn" data-act="pad">Check your invoice pad details</button>`}</div>`;
+  // suggestions for item names and customers
+  const names = new Map(), custs = new Map();
+  for (const v of all){ for (const it of v.items || []) if (it.n && !names.has(projKey(it.n))) names.set(projKey(it.n), it.n); if (v.customer && !custs.has(projKey(v.customer))) custs.set(projKey(v.customer), v.customer); }
+  $("invItemList").innerHTML = [...names.values()].slice(0, 300).map(n => `<option value="${esc(n)}">`).join("");
+  $("invCustList").innerHTML = [...custs.values()].slice(0, 300).map(n => `<option value="${esc(n)}">`).join("");
+}
+function itemRow(it, i){
+  return `<div class="it" data-i="${i}"><span class="sn">${i+1}</span><input class="nm" data-f="n" value="${esc(it.n || "")}" placeholder="Item name" list="invItemList" autocomplete="off">
+    <input class="q" data-f="q" type="number" inputmode="decimal" min="0" step="any" value="${esc(it.q ?? "")}" placeholder="Qty">
+    <input class="r" data-f="r" type="number" inputmode="decimal" min="0" step="any" value="${esc(it.r ?? "")}" placeholder="Rate">
+    <span class="amt">${nf(lineAmt(it))}</span><button class="x" data-act="itdel" title="Remove item">×</button></div>`;
+}
+function renderInvoice(full){
+  const v = invById(curInv); if (!v) return;
+  $("iTitle").textContent = `Invoice #${v.no}`;
+  const act = document.activeElement, set = (id, val) => { if (act !== $(id)) $(id).value = val; };
+  set("iCust", v.customer || ""); set("iPhone", v.phone || ""); set("iDate", v.date || today()); set("iNo", v.no || ""); set("iNote", v.note || "");
+  if (full || !$("iItems").contains(act)) $("iItems").innerHTML = (v.items || []).map(itemRow).join("") || `<div class="empty" style="padding:14px 4px;text-align:left">No items yet. Type one above, like <b>Cement bag 5 x 1450</b>.</div>`;
+  else for (const r of $("iItems").querySelectorAll(".it")){ const it = v.items[+r.dataset.i]; if (it) r.querySelector(".amt").textContent = nf(lineAmt(it)); }
+  const n = (v.items || []).filter(it => it.n).length;
+  $("iCount").textContent = n ? `${n} item${n > 1 ? "s" : ""}` : "";
+  const t = invTotals(v);
+  if (!$("iTot").contains(act) || full) $("iTot").innerHTML = `<div class="ln"><span>Total of items</span><b>${rs(t.sub)}</b></div>
+    <div class="ln"><span>Discount</span><input id="iDisc" type="number" inputmode="decimal" min="0" step="any" value="${t.disc || ""}" placeholder="0"></div>
+    <div class="ln big"><span>Bill total</span><b id="iNet">${rs(t.net)}</b></div>
+    <div class="ln"><span>Received</span><input id="iRec" type="number" inputmode="decimal" min="0" step="any" value="${t.rec || ""}" placeholder="0"></div>
+    <div class="ln big ${t.bal > 0 ? "due" : "ok"}" id="iBalLn"><span>${t.bal > 0 ? "Balance due" : t.bal < 0 ? "Change to return" : "Fully paid"}</span><b id="iBal">${rs(Math.abs(t.bal))}</b></div>`;
+  else { $("iTot").querySelector(".ln b").textContent = rs(t.sub); $("iNet").textContent = rs(t.net); $("iBal").textContent = rs(Math.abs(t.bal));
+    const bl = $("iBalLn"); bl.className = `ln big ${t.bal > 0 ? "due" : "ok"}`; bl.querySelector("span").textContent = t.bal > 0 ? "Balance due" : t.bal < 0 ? "Change to return" : "Fully paid"; }
+  schedulePreview();
+}
+// edits on the invoice page save as you type; the preview catches up a moment later
+let invSaveT = null;
+function invChanged(){ clearTimeout(invSaveT); invSaveT = setTimeout(save, 400); renderInvoice(false); }
+$("view-invoice").addEventListener("input", e => {
+  const v = invById(curInv); if (!v) return;
+  const el = e.target, row = el.closest(".it");
+  if (row){ const it = v.items[+row.dataset.i]; if (!it) return; it[el.dataset.f] = el.dataset.f === "n" ? el.value : el.value === "" ? "" : num(el.value); invChanged(); return; }
+  const map = {iCust:"customer", iPhone:"phone", iDate:"date", iNote:"note"};
+  if (map[el.id]) v[map[el.id]] = el.value;
+  else if (el.id === "iNo") v.no = Math.max(1, Math.round(num(el.value))) || v.no;
+  else if (el.id === "iDisc") v.discount = num(el.value);
+  else if (el.id === "iRec") v.received = num(el.value);
+  else return;
+  invChanged();
+});
+// picking a known item fills in the rate you used last time
+$("iItems").addEventListener("change", e => {
+  const el = e.target, row = el.closest(".it"); if (!row || el.dataset.f !== "n") return;
+  const v = invById(curInv), it = v && v.items[+row.dataset.i]; if (!it || num(it.r)) return;
+  const r = lastRate(it.n); if (r){ it.r = r; if (it.q === "" || it.q == null) it.q = 1; save(); renderInvoice(true); }
+});
+$("iItems").addEventListener("click", e => {
+  const b = e.target.closest("[data-act=itdel]"); if (!b) return;
+  const v = invById(curInv), i = +b.closest(".it").dataset.i; v.items.splice(i, 1); save(); renderInvoice(true);
+});
+$("view-invoice").addEventListener("focusout", () => setTimeout(() => { if (view === "invoice" && !$("view-invoice").contains(document.activeElement)) renderInvoice(true); }, 0));
+function quickAddItem(){
+  const v = invById(curInv), it = parseItem($("iQuick").value); if (!v || !it) { $("iQuick").focus(); return; }
+  v.items.push(it); $("iQuick").value = ""; save(); renderInvoice(true); $("iQuick").focus();
+}
+$("iQuickAdd").onclick = quickAddItem;
+$("iQuick").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); quickAddItem(); } });
+$("iAddRow").onclick = () => { const v = invById(curInv); v.items.push({n:"", q:1, r:""}); save(); renderInvoice(true); const ins = $("iItems").querySelectorAll(".nm"); ins[ins.length-1].focus(); };
+$("invNew").onclick = () => newInvoice();
+$("invList").addEventListener("click", e => { const r = e.target.closest("[data-inv]"); if (r) openInvoice(r.dataset.inv); if (e.target.closest("[data-act=pad]")) padDialog(); });
+$("invSearch").addEventListener("input", e => { invQ = e.target.value; renderInvoices(); });
+$("iCopy").onclick = () => { const v = invById(curInv); if (v){ newInvoice(v); toast(`Copied into invoice #${invById(curInv).no}`); } };
+$("iDel").onclick = () => {
+  const v = invById(curInv); if (!v || !confirm(`Delete invoice #${v.no}${v.customer ? " for " + v.customer : ""}?`)) return;
+  snapshot(); db.invoices = db.invoices.filter(x => x !== v); view = "invoices"; save(); render(); toast(`Deleted invoice #${v.no}`, true);
+};
+// invoice pad (shop details)
+let padInkV = INKS[0];
+function padDialog(){
+  const s = shop(); padInkV = s.ink;
+  for (const k of ["Name","Tag","Addr","Phone","Web","Social","Policy","Foot","Start"]) $("pad"+k).value = s[k.toLowerCase()] ?? "";
+  $("padInk").innerHTML = INKS.map(c => `<button data-c="${c}" style="background:${c}" class="${c === padInkV ? "on" : ""}" title="Ink colour"></button>`).join("");
+  $("padDlg").showModal(); $("padName").focus();
+}
+$("padInk").onclick = e => { const b = e.target.closest("button"); if (!b) return; padInkV = b.dataset.c; for (const x of $("padInk").children) x.classList.toggle("on", x === b); };
+$("invPad").onclick = () => padDialog();
+$("padCancel").onclick = () => $("padDlg").close();
+$("padSave").onclick = () => {
+  const g = id => $(id).value.trim();
+  db.shop = {name:g("padName") || SHOP0.name, tag:g("padTag"), addr:g("padAddr"), phone:g("padPhone"), web:g("padWeb"), social:g("padSocial"), policy:g("padPolicy"),
+    foot:g("padFoot"), start:Math.max(1, Math.round(num(g("padStart"))) || 1), ink:padInkV, updatedAt:Date.now()};
+  $("padDlg").close(); save(); render(); toast("Invoice pad saved");
+};
+
+// ---- drawing the invoice like a page from the shop's bill book ----
+const IW = 1080;
+let invFontReady = null;
+function fontReady(){
+  if (!invFontReady) invFontReady = document.fonts && document.fonts.load ? Promise.all(["400 30px Nunito", "700 30px Nunito", "800 30px Nunito"].map(f => document.fonts.load(f))).catch(() => {}) : Promise.resolve();
+  return invFontReady;
+}
+function wrapText(ctx, text, maxW){
+  const out = []; let line = "";
+  for (const w of String(text).split(/\s+/)){
+    const t = line ? line + " " + w : w;
+    if (ctx.measureText(t).width <= maxW || !line){ line = t; while (ctx.measureText(line).width > maxW && line.length > 1){ let k = line.length - 1; while (k > 1 && ctx.measureText(line.slice(0, k)).width > maxW) k--; out.push(line.slice(0, k)); line = line.slice(k); } }
+    else { out.push(line); line = w; }
+  }
+  if (line) out.push(line);
+  return out.length ? out : [""];
+}
+function drawInvoice(v){
+  // laid out like the TKK Kitchen & Accessories bill book: printed parts in the pad's red and black, filled-in parts in blue pen
+  const s = shop(), red = s.ink, black = "#1b1b1b", pen = "#1d2f9e";
+  const SERIF = `"Times New Roman", "Noto Serif", Georgia, serif`, PEN = `Nunito, "Segoe UI", Roboto, sans-serif`;
+  const F = (w, px, fam = SERIF, it = "") => `${it} ${w} ${px}px ${fam}`.trim();
+  const c = document.createElement("canvas"), ctx = c.getContext("2d");
+  const items = (v.items || []).filter(it => it.n || num(it.q) || num(it.r)), t = invTotals(v);
+  const X0 = 60, X1 = IW - 50;
+  const cols = [{k:"Qty", w:120, a:"center"}, {k:"Description", w:0, a:"left"}, {k:"Rate", w:150, a:"right"}, {k:"Amount", w:220, a:"right"}];
+  cols[1].w = (X1 - X0) - cols.reduce((a,c) => a + c.w, 0);
+  ctx.font = F(400, 32, PEN);
+  const rows = items.map(it => ({it, lines: wrapText(ctx, it.n || "", cols[1].w - 26)}));
+  const minRows = 11, RH = 64, rowH = l => Math.max(RH, 20 + l * 40);
+  const bodyH = rows.reduce((a,r) => a + rowH(r.lines.length), 0) + Math.max(0, minRows - rows.length) * RH;
+  ctx.font = F(400, 28, PEN);
+  const noteLines = v.note ? wrapText(ctx, v.note, X1 - X0) : [];
+  const totRows = 3 + (t.rec ? 2 : 0);
+  const H = 470 + 74 + bodyH + Math.max(totRows * 64, 0) + 40 + noteLines.length * 40 + 120;
+  c.width = IW; c.height = H;
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, IW, H);
+  const text = (str, x, yy, font, color, align = "left") => { ctx.font = font; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = "alphabetic"; ctx.fillText(str, x, yy); };
+  const fit = (str, w, mk, px) => { ctx.font = mk(px); while (px > 16 && ctx.measureText(str).width > w){ px -= 2; ctx.font = mk(px); } return mk(px); };
+  const line = (x, y, w, h, col) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); };
+  // logo: the shop name in heavy black letters with a red mark over the first letter
+  let y = 150;
+  ctx.font = `900 118px "Arial Black", "Helvetica Neue", Arial, sans-serif`; ctx.textAlign = "center";
+  const nm = s.name.toUpperCase(), nw = ctx.measureText(nm).width, nx = IW/2 - nw/2;
+  const fw = ctx.measureText(nm[0] || "").width;
+  line(nx + fw * 0.34, y - 128, fw * 0.32, 26, red);
+  text(nm, IW/2, y, `900 118px "Arial Black", "Helvetica Neue", Arial, sans-serif`, black, "center");
+  // bill number, top right
+  text("Bill #", X1 - 170, 120, F(700, 26), black, "right");
+  text(String(v.no || ""), X1 - 85, 116, F(700, 34, PEN), pen, "center"); line(X1 - 160, 126, 160, 2, black);
+  // line under the logo with the shop line written over it
+  y += 18; line(X0 + 30, y, X1 - X0 - 60, 3, red);
+  if (s.tag){ y += 52; text(s.tag, IW/2, y, fit(s.tag, X1 - X0 - 100, px => F(700, px, `"Dancing Script", "Brush Script MT", cursive, ${SERIF}`, "italic"), 56), black, "center"); }
+  // contact row with little red dots like the printed icons
+  y += 50;
+  const bits = [s.addr, s.phone, s.web, s.social].filter(Boolean);
+  if (bits.length){
+    let px = 27; const mk = p => F(700, p);
+    const total = () => { ctx.font = mk(px); return bits.reduce((a,b) => a + ctx.measureText(b).width + 34, 0) + (bits.length - 1) * 22; };
+    while (px > 16 && total() > X1 - X0) px--;
+    let x = IW/2 - total()/2;
+    for (const b of bits){ ctx.fillStyle = red; ctx.beginPath(); ctx.arc(x + 11, y - px * 0.33, 11, 0, 7); ctx.fill(); text(b, x + 28, y, mk(px), black); ctx.font = mk(px); x += ctx.measureText(b).width + 34 + 22; }
+  }
+  y += 10; line(X0 + 30, y, X1 - X0 - 60, 2, red);
+  if (s.policy){ y += 40; text(s.policy, IW/2 + 60, y, F(700, 28), red, "center"); }
+  // phone, name, date
+  y += 34;
+  text("Phone:", X0, y, F(700, 32), red); line(X0 + 110, y + 6, 330, 2, black);
+  text(v.phone || "", X0 + 122, y - 4, fit(v.phone || "", 310, px => F(700, px, PEN), 32), pen);
+  y += 60;
+  text("Name:", X0, y, F(700, 32), black); line(X0 + 100, y + 6, 560, 2, black);
+  text(v.customer || "", X0 + 112, y - 4, fit(v.customer || "", 540, px => F(700, px, PEN), 34), pen);
+  text("Date:", X1 - 260, y, F(700, 26), red, "right"); line(X1 - 250, y + 6, 250, 2, black);
+  text(v.date ? dmy(v.date).replace(/-/g, "/") : "", X1 - 125, y - 4, F(700, 34, PEN), pen, "center");
+  // table with the red header
+  y += 36;
+  const top = y, xs = []; let xx = X0; for (const col of cols){ xs.push(xx); xx += col.w; }
+  line(X0, y, X1 - X0, 70, red);
+  cols.forEach((col, i) => text(col.k, col.a === "left" ? xs[i] + col.w/2 - 40 : xs[i] + col.w/2, y + 48, F(700, 36), "#fff", "center"));
+  y += 70;
+  for (const r of rows){
+    const h = rowH(r.lines.length), base = y + 45;
+    text(r.it.q === "" ? "" : "(" + nf(num(r.it.q)) + ")", xs[0] + cols[0].w/2, base, F(700, 32, PEN), pen, "center");
+    r.lines.forEach((ln, k) => text(ln, xs[1] + 16, base + k * 40, F(400, 32, PEN), pen));
+    text(r.it.r === "" || !num(r.it.r) ? "–" : nf(num(r.it.r)) + "/-", xs[2] + cols[2].w - 14, base, F(700, 30, PEN), pen, "right");
+    text(nf(lineAmt(r.it)), X1 - 18, base, F(700, 34, PEN), pen, "right");
+    y += h; line(X0, y, X1 - X0, 2, black);
+  }
+  for (let i = rows.length; i < minRows; i++){ y += RH; line(X0, y, X1 - X0, 2, black); }
+  ctx.strokeStyle = black; ctx.lineWidth = 2.5; ctx.strokeRect(X0, top, X1 - X0, y - top);
+  ctx.lineWidth = 2; for (let i = 1; i < xs.length; i++){ ctx.beginPath(); ctx.moveTo(xs[i], top + 70); ctx.lineTo(xs[i], y); ctx.stroke(); }
+  // Sub Total, Discount, Total (and Received, Balance when money was taken)
+  const tx = xs[2], ty = y, tl = [["Sub Total", t.sub, 0], ["Discount", t.disc, 0], ["Total", t.net, 1]];
+  if (t.rec) tl.push(["Received", t.rec, 0], [t.bal >= 0 ? "Balance" : "Change", Math.abs(t.bal), 0]);
+  for (const [k, val, filled] of tl){
+    if (filled) line(tx, y, cols[2].w, 64, red);
+    text(k, tx + cols[2].w/2, y + 43, fit(k, cols[2].w - 12, px => F(700, px), 30), filled ? "#fff" : red, "center");
+    if (val || k !== "Discount") text(nf(val), X1 - 18, y + 45, F(800, 36, PEN), k === "Balance" && val > 0 ? "#c62828" : pen, "right");
+    y += 64; line(tx, y, X1 - tx, 2, black);
+  }
+  ctx.strokeStyle = black; ctx.lineWidth = 2.5; ctx.strokeRect(tx, ty, X1 - tx, y - ty);
+  ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xs[3], ty); ctx.lineTo(xs[3], y); ctx.stroke();
+  // note on the left, thank-you line at the bottom
+  let ny = ty + 50;
+  noteLines.slice(0, Math.max(1, Math.floor((y - ty) / 40) - 1)).forEach(ln => { text(ln, X0, ny, F(400, 28, PEN), pen); ny += 40; });
+  y = Math.max(y, ny) + 70;
+  if (s.foot) text(s.foot.toUpperCase(), X0, y, fit(s.foot.toUpperCase(), tx - X0 - 20, px => F(700, px), 32), red);
+  return c;
+}
+let prevT = null, invURL = null;
+function schedulePreview(){ clearTimeout(prevT); prevT = setTimeout(() => fontReady().then(updatePreview), 250); }
+function updatePreview(){
+  const v = invById(curInv); if (!v || view !== "invoice") return;
+  drawInvoice(v).toBlob(b => { if (!b) return; if (invURL) URL.revokeObjectURL(invURL); invURL = URL.createObjectURL(b); $("iImg").src = invURL; }, "image/png");
+}
+const invFileName = v => `Invoice-${v.no}${v.customer ? "-" + v.customer.replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") : ""}.png`;
+const invBlob = v => fontReady().then(() => new Promise(res => drawInvoice(v).toBlob(res, "image/png")));
+function invText(v){
+  const s = shop(), t = invTotals(v), L = [`*${s.name} ${s.tag}*`, `Bill #${v.no} · ${v.date ? dmy(v.date).replace(/-/g, "/") : ""}`];
+  if (v.customer) L.push(`M/s ${v.customer}`);
+  L.push("");
+  (v.items || []).filter(it => it.n).forEach((it, i) => L.push(`${i+1}. ${it.n}: ${nf(num(it.q))} × ${nf(num(it.r))} = ${rs(lineAmt(it))}`));
+  L.push("", `Total: *${rs(t.sub)}*`);
+  if (t.disc) L.push(`Discount: ${rs(t.disc)}`, `Net total: *${rs(t.net)}*`);
+  if (t.rec) L.push(`Received: ${rs(t.rec)}`, t.bal >= 0 ? `Balance: *${rs(t.bal)}*` : `Change: ${rs(-t.bal)}`);
+  if (v.note) L.push("", v.note);
+  if (s.policy) L.push("", s.policy);
+  L.push([s.addr, s.phone].filter(Boolean).join(" · "));
+  return L.join("\n");
+}
+// Pakistani mobile numbers: 03xx… becomes 923xx… for WhatsApp links
+const waNumber = p => { let d = String(p || "").replace(/\D/g, ""); if (d.startsWith("00")) d = d.slice(2); if (d.startsWith("0")) d = "92" + d.slice(1); return d.length >= 10 ? d : ""; };
+function saveBlob(blob, name){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+$("iShare").onclick = async () => {
+  const v = invById(curInv); if (!v) return;
+  if (!(v.items || []).some(it => it.n)){ toast("Add at least one item first."); $("iQuick").focus(); return; }
+  const blob = await invBlob(v), file = new File([blob], invFileName(v), {type:"image/png"});
+  if (navigator.canShare && navigator.canShare({files:[file]})){
+    try { await navigator.share({files:[file], title:`Invoice #${v.no}`}); v.sentAt = Date.now(); save(); }
+    catch(e){ if (e.name !== "AbortError") toast("Couldn't open sharing. Try Save image instead."); }
+    return;
+  }
+  // computers without file sharing: save the picture, then open WhatsApp so it can be attached
+  saveBlob(blob, invFileName(v));
+  const n = waNumber(v.phone);
+  window.open(n ? `https://wa.me/${n}` : "https://web.whatsapp.com/", "_blank", "noopener");
+  toast("Invoice picture saved. Attach it in the WhatsApp chat (📎 → Photos).");
+};
+$("iSave").onclick = async () => { const v = invById(curInv); if (v){ saveBlob(await invBlob(v), invFileName(v)); toast("Invoice picture saved to Downloads"); } };
+$("iText").onclick = () => { const v = invById(curInv); if (!v) return; const n = waNumber(v.phone);
+  window.open(`https://wa.me/${n}?text=${encodeURIComponent(invText(v))}`, "_blank", "noopener"); };
+$("iPdf").onclick = async () => {
+  const v = invById(curInv); if (!v) return;
+  const blob = await invBlob(v), url = URL.createObjectURL(blob), img = $("invPrint");
+  img.onload = () => { document.body.classList.add("print-inv"); setTimeout(() => { window.print(); document.body.classList.remove("print-inv"); URL.revokeObjectURL(url); }, 50); };
+  img.src = url;
+};
 function openProject(id){ curProj = id; view = "project"; render(); }
 $("projNav").addEventListener("click", e => { const b = e.target.closest("[data-proj]"); if (b) openProject(b.dataset.proj); });
 $("projList").addEventListener("click", e => { const b = e.target.closest("[data-proj]"); if (b) openProject(b.dataset.proj); });
@@ -1361,7 +1777,7 @@ for (const id of ["quick","quickDesc"]) $(id).addEventListener("keydown", e => {
   if (e.key === "Enter"){ e.preventDefault(); addFromForm(); }
   if (e.key === "Escape"){ e.stopPropagation(); closeAdd(); }
 });
-$("addRow").onclick = openAdd; $("sideAdd").onclick = openAdd; $("fab").onclick = openAdd;
+$("addRow").onclick = openAdd; $("sideAdd").onclick = openAdd; $("fab").onclick = () => view === "invoices" ? newInvoice() : openAdd();
 $("addCancel").onclick = closeAdd; $("addSubmit").onclick = addFromForm;
 $("rescheduleAll").onclick = () => {
   const d = today(), list = db.tasks.filter(t => t.repeat === "none" && !t.done && t.date < d);
@@ -1709,16 +2125,17 @@ const Sync = (() => {
     tasks.sort((a,b) => a.id < b.id ? -1 : 1);
     // projects, employees and payments merge the same way as tasks
     const lists = {};
-    for (const key of ["projects", "employees", "payments"]){
+    for (const key of ["projects", "employees", "payments", "invoices"]){
       const pp = {};
       for (const p of [...(R[key] || []), ...(L[key] || [])]){ const c = pp[p.id]; if (!c || (p.updatedAt || 0) >= (c.updatedAt || 0)) pp[p.id] = p; }
       lists[key] = Object.values(pp).filter(p => !(del[p.id] > (p.updatedAt || 0))).sort((a,b) => a.id < b.id ? -1 : 1);
       for (const k in del) if (pp[k] && !(del[k] > (pp[k].updatedAt || 0))) delete del[k];
     }
     const c = !L.calId || (R.calId && (R.calIdAt || 0) >= (L.calIdAt || 0)) ? R : L;   // newest calendar wins
-    return {tasks, projects:lists.projects, employees:lists.employees, payments:lists.payments, logs, deleted:del, logStamps, calId:c.calId || null, calIdAt:c.calIdAt || 0};
+    const shopW = !L.shop || (R.shop && (R.shop.updatedAt || 0) > (L.shop.updatedAt || 0)) ? R.shop : L.shop;   // newest invoice pad wins
+    return {tasks, projects:lists.projects, employees:lists.employees, payments:lists.payments, invoices:lists.invoices, shop:shopW || null, logs, deleted:del, logStamps, calId:c.calId || null, calIdAt:c.calIdAt || 0};
   }
-  const shared = d => ({tasks:d.tasks, projects:d.projects || [], employees:d.employees || [], payments:d.payments || [], logs:d.logs, deleted:d.deleted || {}, logStamps:d.logStamps || {}, calId:d.calId || null, calIdAt:d.calIdAt || 0});
+  const shared = d => ({tasks:d.tasks, projects:d.projects || [], employees:d.employees || [], payments:d.payments || [], invoices:d.invoices || [], shop:d.shop || null, logs:d.logs, deleted:d.deleted || {}, logStamps:d.logStamps || {}, calId:d.calId || null, calIdAt:d.calIdAt || 0});
 
   // ---- Google Calendar: one event per task with a time, kept up to date, with a phone alert at the reminder time ----
   const tzName = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
